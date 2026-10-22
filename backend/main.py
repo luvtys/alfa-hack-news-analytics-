@@ -10,18 +10,16 @@ def get_db():
 
 @app.get("/")
 def root():
-    return {"message": "Alfa Hack API is running! 🚀"}
+    return {"message": "Alfa Hack API is running!"}
 
 @app.get("/api/companies/{company_id}")
 def get_company(company_id: str):
-    ...  # твой существующий код
+    ...  
 
 @app.get("/api/persons/{company_id}")
 def get_persons(company_id: str):
-    ...  # твой существующий код
+    ...  
 
-
-# ⬇️⬇️️ ВОТ СЮДА, В САМЫЙ КОНЕЦ, БЕЗ ОТСТУПОВ ⬇️⬇️⬇️
 @app.get("/api/companies/{company_id}/context")
 def get_company_context(company_id: str):
     """Полный бизнес-контекст компании: профиль + физлица + контрагенты"""
