@@ -1,0 +1,201 @@
+{
+  "contract_version": "1.1.0",
+  "synthetic_u": "U_26030",
+  "role_view": "CFO",
+  "generated_at": "2026-10-20T09:12:00+03:00",
+  "total": 1,
+  "items": [
+    {
+      "contract_version": "1.1.0",
+      "insight_id": "ins_20261020_U_26030_001",
+      "generated_at": "2026-10-20T09:12:00+03:00",
+      "client": {
+        "synthetic_u": "U_26030",
+        "group_id": "group_133767_sb",
+        "group_structure_suspect": false,
+        "role_view": "CFO",
+        "features_used": [
+          {
+            "code": "MAINOKVED_CODE",
+            "value": "46.71.2",
+            "source": "company_features",
+            "label": "Торговля оптовая моторным топливом"
+          },
+          {
+            "code": "revenue_bn_rub",
+            "value": 60.403,
+            "source": "company_features",
+            "label": "Выручка, млрд руб."
+          },
+          {
+            "code": "CL_PRODUCT_LOA_MARK",
+            "value": 1,
+            "source": "company_features",
+            "label": "Кредит"
+          },
+          {
+            "code": "CL_PRODUCT_LEA_MARK",
+            "value": 1,
+            "source": "company_features",
+            "label": "Лизинг"
+          },
+          {
+            "code": "observed_flow_to_revenue",
+            "value": 0.22,
+            "source": "counterparty_stats",
+            "label": "Покрытие выручки наблюдаемым потоком"
+          }
+        ],
+        "features_missing": [
+          "AMOUNT_WORKERS_SPARK_GRADATION"
+        ]
+      },
+      "event": {
+        "headline": "Банк России сохранил ключевую ставку на уровне 14,0%, риторика ужесточилась",
+        "published_at": "2026-09-11T13:30:00+03:00",
+        "origin": "regulator",
+        "source_name": "Банк России",
+        "source_url": null,
+        "event_type": "monetary_policy",
+        "entities": [
+          "Банк России"
+        ],
+        "confirmed_facts": [
+          "Ставка сохранена на уровне 14,0%",
+          "Опция снижения на заседании не рассматривалась",
+          "Ближайшие заседания — 23 октября и 18 декабря 2026 года",
+          "Альфа-Банк повысил прогноз ставки на конец 2026 года с 13,5% до 14,0%"
+        ],
+        "unconfirmed": []
+      },
+      "relevance": {
+        "scenario_id": "cost_of_debt",
+        "score": 0.69,
+        "threshold": 0.55,
+        "components": {
+          "factor_exposure": 0.35,
+          "sector_match": 0.17,
+          "counterparty_proximity": 0.02,
+          "geography": 0.04,
+          "materiality": 0.1
+        },
+        "explanation": "У компании одновременно кредит и лизинг при выручке 60,4 млрд, а 67% корпоративного кредитования в стране привязано к ключевой ставке"
+      },
+      "interpretation": {
+        "headline": "Пауза на 14% закрывает сценарий удешевления долга до конца года",
+        "what_happened": "ЦБ сохранил ставку на 14,0% впервые после цикла снижений и не рассматривал опцию снижения. Альфа-Банк вслед за этим повысил прогноз ставки на конец 2026 года с 13,5% до 14,0%, прогноз на конец 2027 года — 12,0%.",
+        "why_it_matters": "В стране 67% корпоративных кредитов выданы по плавающей ставке, и процентный риск по ним полностью лежит на заёмщике. У компании действуют и кредит, и лизинг. Если ставка по кредиту плавающая, процентные расходы не снизятся как минимум до января, а доходность корпоративных облигаций заёмщика высшего кредитного качества составляет 15,3%.",
+        "consequences": [
+          {
+            "type": "risk",
+            "horizon": "0-3M",
+            "text": "Процентные расходы по плавающей части долга остаются на текущем уровне минимум два квартала",
+            "confidence": "high",
+            "evidence_ids": [
+              "e1",
+              "e2",
+              "e3"
+            ]
+          },
+          {
+            "type": "opportunity",
+            "horizon": "0-3M",
+            "text": "Свободная ликвидность размещается под ставку, которая до конца года не снизится",
+            "confidence": "medium",
+            "evidence_ids": [
+              "e1"
+            ]
+          }
+        ],
+        "bank_view": {
+          "text": "Альфа-Банк ожидает сохранения паузы на заседании 23 октября и ставки 14,0% до конца 2026 года; прогноз на конец 2027 года — 12,0%",
+          "doc": "Ключевая ставка ЦБ РФ",
+          "as_of_date": "2026-09-11",
+          "page": 1,
+          "quote": "Если раньше мы ориентировались на ставку на уровне 13,5% на конец 2026 г., то теперь мы ожидаем ее сохранения на текущем значении 14,0% до конца года",
+          "superseded_by": null
+        },
+        "model_inference": [
+          "Тип ставки по действующему кредиту компании в данных не указан; вывод построен на доле плавающих ставок по рынку в целом"
+        ]
+      },
+      "actions": [
+        {
+          "text": "Уточнить долю плавающей ставки в кредитном портфеле и пересчитать расходы при КС 14% до января",
+          "owner_role": "CFO",
+          "product_hint": "none",
+          "urgency": "now"
+        },
+        {
+          "text": "Оценить фиксацию ставки по части долга до заседания 23 октября",
+          "owner_role": "CFO",
+          "product_hint": "fixed_rate_loan",
+          "urgency": "now"
+        },
+        {
+          "text": "Разместить свободный остаток на срок до конца года",
+          "owner_role": "CFO",
+          "product_hint": "deposit",
+          "urgency": "this_quarter"
+        }
+      ],
+      "evidence": [
+        {
+          "id": "e1",
+          "kind": "alfa_view",
+          "ref": "corpus://policy_rate#p1",
+          "label": "Ключевая ставка ЦБ РФ, 11.09.2026, с. 1",
+          "as_of_date": "2026-09-11",
+          "depends_on": []
+        },
+        {
+          "id": "e2",
+          "kind": "alfa_view",
+          "ref": "corpus://fi_strategy_3q26#p10",
+          "label": "Тактический взгляд 3К26, с. 10: 67% кредитов по плавающей ставке",
+          "as_of_date": "2026-07-22",
+          "depends_on": []
+        },
+        {
+          "id": "e3",
+          "kind": "verified_fact",
+          "ref": "db://company_features/U_26030#CL_PRODUCT_LOA_MARK",
+          "label": "Действующий кредит",
+          "as_of_date": null,
+          "depends_on": []
+        },
+        {
+          "id": "e4",
+          "kind": "alfa_view",
+          "ref": "corpus://bond_brief#p4",
+          "label": "Бонд Бриф, 14.09.2026, с. 4: доходности AAA 15,3%, AA 17,0%, A 19,8%",
+          "as_of_date": "2026-09-14",
+          "depends_on": []
+        },
+        {
+          "id": "e5",
+          "kind": "model_inference",
+          "ref": "inference://floating_share_assumption",
+          "label": "Предположение о типе ставки",
+          "as_of_date": null,
+          "depends_on": [
+            "e2",
+            "e3"
+          ]
+        }
+      ],
+      "data_quality": {
+        "flow_coverage_tier": "medium",
+        "observed_flow_to_revenue": 0.22,
+        "unknown_counterparty_share": 0.68,
+        "notes": [
+          "Вывод не опирается на платёжные данные, поэтому ограничение по покрытию на него не влияет"
+        ]
+      },
+      "disclaimers": [
+        "Материал не является индивидуальной инвестиционной рекомендацией"
+      ],
+      "trace_id": "trc_4c90de"
+    }
+  ]
+}

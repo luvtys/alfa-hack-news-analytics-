@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+body { background: #f2f3f5; color: #1a1a1a; -webkit-font-smoothing: antialiased; }
+
+/* Шапка */
+.app-header { background: #111; color: #fff; padding: 0 40px; height: 60px; display: flex; justify-content: space-between; align-items: center; }
+.header-left { display: flex; align-items: center; gap: 15px; }
+.logo { font-weight: 800; font-size: 18px; color: #EF3124; }
+.header-divider { width: 1px; height: 20px; background: #333; }
+.header-title { font-size: 13px; color: #aaa; }
+.header-right { display: flex; align-items: center; gap: 15px; }
+.role-select { background: #222; color: #fff; border: 1px solid #333; padding: 6px 12px; border-radius: 6px; font-size: 13px; outline: none; cursor: pointer; }
+.user-avatar { width: 30px; height: 30px; border-radius: 50%; background: #EF3124; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+
+/* Контейнер */
+.container { max-width: 1400px; margin: 20px auto; padding: 0 20px; }
+
+/* Виджет */
+.entry-widget { background: linear-gradient(135deg, #111 0%, #333 100%); color: #fff; border-radius: 16px; padding: 30px 40px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.2s; }
+.entry-widget:hover { transform: translateY(-2px); }
+.widget-content { display: flex; align-items: center; gap: 20px; }
+.widget-icon { font-size: 40px; }
+.widget-text h3 { font-size: 20px; margin-bottom: 6px; color: #EF3124; }
+.widget-text p { font-size: 14px; color: #ccc; max-width: 500px; }
+.widget-btn { background: #EF3124; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+.widget-btn:hover { background: #d32f2f; }
+
+/* Демо */
+.demo-panel { background: #fff; padding: 6px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.demo-label { font-size: 12px; color: #888; margin-left: 10px; }
+.demo-buttons { display: flex; gap: 4px; }
+.btn-demo { background: transparent; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 12px; color: #666; transition: 0.2s; }
+.btn-demo:hover { background: #f0f0f0; color: #111; }
+.btn-demo.active { background: #111; color: #fff; }
+
+/* Сетка */
+.dashboard-grid { display: grid; grid-template-columns: 1fr 450px; gap: 20px; align-items: start; }
+.fade-in { animation: fadeIn 0.3s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Профиль */
+.client-profile { background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); border: 1px solid #eee; }
+.profile-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: #111; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+.profile-id { color: #888; font-weight: 400; }
+.profile-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.profile-tag { background: #f8f9fa; border: 1px solid #eee; padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #444; display: flex; align-items: center; gap: 6px; }
+.profile-tag strong { color: #111; font-weight: 600; }
+
+/* Карточка */
+.insight-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
+.insight-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: #EF3124; }
+.insight-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.header-tags { display: flex; gap: 10px; align-items: center; }
+.tag-alfa { background: #fff0ef; color: #EF3124; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.tag-score { background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1px solid #c8e6c9; }
+.date { color: #999; font-size: 13px; }
+.event-headline { font-size: 24px; margin-bottom: 20px; line-height: 1.3; color: #111; font-weight: 700; }
+.why-matters-box { background: #f8f9fa; border-left: 3px solid #EF3124; padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 20px; }
+.why-matters-box h3 { font-size: 14px; margin-bottom: 8px; color: #111; }
+.why-matters-box p { font-size: 14px; line-height: 1.5; color: #444; }
+.consequences { display: flex; gap: 12px; margin-bottom: 20px; }
+.consequence { flex: 1; padding: 16px; border-radius: 12px; background: #fff; border: 1px solid #eee; }
+.badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
+.badge-risk { background: #ffeaea; color: #d32f2f; }
+.badge-opportunity { background: #e8f5e9; color: #2e7d32; }
+.consequence p { font-size: 13px; line-height: 1.5; color: #333; }
+
+/* Блок мнения банка */
+.bank-view-box { background: #111; color: #fff; padding: 20px; border-radius: 12px; }
+.bank-view-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.bank-view-box h4 { color: #EF3124; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+.bank-date { font-size: 10px; color: #888; }
+.bank-view-box blockquote { font-style: italic; font-size: 16px; line-height: 1.5; color: #eee; margin-bottom: 15px; }
+
+.source-links { display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid #333; padding-top: 12px; }
+.evidence-badge { font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; cursor: pointer; background: #222; color: #ccc; border: 1px solid #333; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 4px; }
+.evidence-badge:hover { background: #333; color: #fff; }
+.evidence-badge.verified_fact { color: #4ade80; border-color: #166534; background: #052e16; }
+.evidence-badge.alfa_view { color: #60a5fa; border-color: #1e40af; background: #172554; }
+.evidence-badge.model_inference { color: #facc15; border-color: #854d0e; background: #422006; }
+
+/* Действия */
+.actions-box { background: #f8f9fa; padding: 16px; border-radius: 12px; margin-top: 20px; border: 1px solid #eee; }
+.actions-box h4 { margin-bottom: 12px; color: #111; font-size: 14px; }
+.action-btn { display: block; width: 100%; text-align: left; background: #fff; border: 1px solid #ddd; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; font-weight: 500; color: #111; cursor: pointer; transition: 0.2s; }
+.action-btn:hover { border-color: #EF3124; color: #EF3124; background: #fff0ef; }
+
+/* Правая колонка */
+.side-panel { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; }
+.panel-header { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+.panel-header h3 { font-size: 15px; font-weight: 700; color: #111; }
+
+/* Трасса */
+.timeline { border-left: 2px solid #eee; padding-left: 15px; margin-left: 5px; }
+.step { position: relative; margin-bottom: 15px; display: flex; align-items: flex-start; }
+.step-icon { position: absolute; left: -26px; background: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; border: 2px solid #eee; z-index: 2; }
+.step-content { font-size: 12px; color: #333; background: #f8f9fa; padding: 12px; border-radius: 8px; width: 100%; border: 1px solid #eee; cursor: pointer; transition: 0.2s; }
+.step-content:hover { background: #f0f0f0; }
+.step-content details { margin-top: 8px; font-size: 11px; color: #666; }
+.step-content details summary { cursor: pointer; color: #EF3124; font-weight: 600; outline: none; }
+.step.ok .step-icon { border-color: #4ade80; color: #4ade80; background: #f0fdf4; }
+.step.failed .step-icon { border-color: #EF3124; color: #EF3124; background: #fff0ef; }
+.step.retry .step-icon { border-color: #f59e0b; color: #f59e0b; background: #fffbeb; }
+.step.failed .step-content { background: #fff0ef; border-color: #fecaca; }
+.step.retry .step-content { background: #fffbeb; border-color: #fef3c7; }
+
+/* Чат */
+.chat-history { margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 5px; }
+.chat-msg { padding: 10px 14px; border-radius: 12px; max-width: 90%; font-size: 13px; line-height: 1.4; }
+.chat-msg.user { background: #111; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+.chat-msg.assistant { background: #f0f0f0; color: #111; align-self: flex-start; border-bottom-left-radius: 2px; }
+.chat-input-box { display: flex; gap: 8px; }
+.chat-input-box input { flex: 1; padding: 10px 14px; border: 1px solid #eee; border-radius: 8px; font-size: 13px; outline: none; }
+.chat-input-box input:focus { border-color: #111; }
+.chat-input-box button { background: #EF3124; color: #fff; border: none; width: 40px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 18px; }
+
+/* Экран отказа */
+.blocked-card { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-top: 4px solid #EF3124; }
+.blocked-icon-wrapper { width: 60px; height: 60px; background: #fff0ef; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+.blocked-icon-wrapper.empty { background: #f0f0f0; }
+.blocked-card h2 { font-size: 22px; margin-bottom: 10px; font-weight: 700; }
+.blocked-message { font-size: 15px; color: #555; margin-bottom: 20px; }
+.blocked-detail { background: #f8f9fa; padding: 16px; border-radius: 12px; text-align: left; font-size: 14px; line-height: 1.5; color: #333; border: 1px solid #eee; }
+
+@media (max-width: 1024px) {
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .entry-widget { flex-direction: column; text-align: center; gap: 20px; }
+    .widget-content { flex-direction: column; }
+}

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Альфа-Бизнес | Инсайты</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo">АЛЬФА-БИЗНЕС</div>
+            <span class="header-divider"></span>
+            <span class="header-title">Новостная аналитика</span>
+        </div>
+        <div class="header-right">
+            <select id="role-selector" class="role-select" onchange="changeRole()">
+                <option value="CFO">Финансовый директор</option>
+                <option value="OWNER">Собственник</option>
+                <option value="CHIEF_ACCOUNTANT">Главный бухгалтер</option>
+            </select>
+            <div class="user-avatar">М</div>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- ТОЧКА ВХОДА -->
+        <div class="entry-widget fade-in" id="entry-widget">
+            <div class="widget-content">
+                <div class="widget-icon">📊</div>
+                <div class="widget-text">
+                    <h3>Новостная аналитика</h3>
+                    <p>Персональные инсайты для вашего бизнеса на основе данных и аналитики Альфа-Банка</p>
+                </div>
+            </div>
+            <button class="widget-btn" onclick="startAnalysis()">Открыть ленту →</button>
+        </div>
+
+        <!-- Демо-панель -->
+        <div class="demo-panel" id="demo-panel" style="display: none;">
+            <span class="demo-label">Демо-сценарии:</span>
+            <div class="demo-buttons">
+                <button onclick="switchState('insight')" class="btn-demo active" id="btn-insight">Инсайт</button>
+                <button onclick="switchState('blocked')" class="btn-demo" id="btn-blocked">Отказ</button>
+                <button onclick="switchState('empty')" class="btn-demo" id="btn-empty">Пусто</button>
+            </div>
+        </div>
+
+        <!-- Сетка -->
+        <div class="dashboard-grid" id="dashboard-grid" style="display: none;">
+            
+            <div class="col-left">
+                <!-- Профиль клиента -->
+                <div id="client-profile" class="client-profile fade-in" style="display: none;">
+                    <div class="profile-header">
+                        <span>Профиль компании</span>
+                        <span class="profile-id" id="profile-u-id">-</span>
+                    </div>
+                    <div class="profile-tags" id="profile-tags"></div>
+                    <div class="profile-missing" id="profile-missing" style="display:none; margin-top: 10px; font-size: 11px; color: #d32f2f; font-style: italic;"></div>
+                </div>
+
+                <!-- Карточка инсайта -->
+                <div id="insight-container" class="fade-in"></div>
+                
+                <!-- Экран отказа -->
+                <div id="blocked-container" class="fade-in" style="display: none;">
+                    <div class="blocked-card">
+                        <div class="blocked-icon-wrapper">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EF3124" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        </div>
+                        <h2>Вывод не сделан</h2>
+                        <p class="blocked-message" id="blocked-message-text">Сигнал найден, но данных для вывода недостаточно.</p>
+                        <div class="blocked-detail" id="blocked-detail"></div>
+                    </div>
+                </div>
+
+                <!-- Экран пустой ленты -->
+                <div id="empty-container" class="fade-in" style="display: none;">
+                    <div class="blocked-card empty-state">
+                        <div class="blocked-icon-wrapper empty">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+                        <h2>Нет актуальных инсайтов</h2>
+                        <p class="blocked-message" id="empty-message-text">За последние сутки релевантных событий не найдено.</p>
+                        <div class="blocked-detail" id="empty-detail"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-right">
+                <div id="trace-container" class="side-panel fade-in" style="display: none;">
+                    <div class="panel-header">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF3124" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        <h3>Как ИИ пришел к выводу</h3>
+                    </div>
+                    <div class="timeline" id="timeline-steps"></div>
+                </div>
+
+                <div class="side-panel chat-panel fade-in" id="chat-container" style="display: none;">
+                    <div class="panel-header">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF3124" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        <h3>Уточнить у ИИ</h3>
+                    </div>
+                    <div class="chat-history" id="chat-history">
+                        <div class="chat-msg assistant">Я проанализировал новость. Задайте вопрос по этой компании.</div>
+                    </div>
+                    <div class="chat-input-box">
+                        <input type="text" id="chat-input" placeholder="Например: Кто наш крупнейший покупатель?" onkeypress="if(event.key === 'Enter') sendQuestion()">
+                        <button onclick="sendQuestion()">→</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
