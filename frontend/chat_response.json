@@ -1,0 +1,5 @@
+{
+  "answer": "Второй по размеру плательщик — U_12345, его доля 12%.",
+  "evidence": [{"id": "e2", "kind": "verified_fact", "ref": "db://...", "label": "Данные витрины"}],
+  "insufficient_data": false
+}
