@@ -1,0 +1,309 @@
+# Четыре золотых сценария как конфигурация для score_relevance().
+#
+# Правило номер один: здесь нет моделей. Скоринг детерминирован, объясним и
+# стоит ноль токенов. Языковая модель подключается только к тем событиям,
+# которые прошли порог.
+#
+# Порядок вычисления для пары (компания, событие):
+#   1. triggers  — подходит ли событие сценарию вообще. Нет — сценарий молчит.
+#   2. audience  — подходит ли компания. Нет — сценарий молчит.
+#   3. guards    — хватает ли качества данных. Нет — либо блок, либо штраф.
+#   4. components — пять компонент 0..1 по правилам ниже.
+#   5. score = sum(weight_i * component_i) * role_multiplier
+#   6. score >= threshold — событие попадает в ленту.
+#
+# Поля компании берутся из company_profile витрины, поля события — из
+# записи парсера после нормализации сущностей.
+
+version: "1.0.0"
+
+defaults:
+  threshold: 0.55
+  weights:
+    factor_exposure: 0.35
+    sector_match: 0.25
+    counterparty_proximity: 0.20
+    geography: 0.10
+    materiality: 0.10
+  # Масштаб компании. Общая для всех сценариев компонента: событие важнее
+  # для того, у кого больше оборот. Считается по выручке группы, если
+  # структура группы подтверждена, иначе по юрлицу.
+  materiality:
+    rules:
+      - when: {field: effective_revenue_bn, gte: 50}
+        value: 1.0
+      - when: {field: effective_revenue_bn, gte: 15}
+        value: 0.8
+      - when: {field: effective_revenue_bn, gte: 5}
+        value: 0.5
+      - when: {field: effective_revenue_bn, gte: 1}
+        value: 0.3
+    default: 0.1
+
+scenarios:
+
+  # ------------------------------------------------------------------
+  - id: cost_of_debt
+    name: Стоимость долга
+    enabled: true
+    threshold: 0.55
+    role_multiplier: {OWNER: 0.9, CFO: 1.0, CHIEF_ACCOUNTANT: 0.7}
+
+    triggers:
+      any:
+        - {event: event_type, in: [monetary_policy, budget]}
+        - {event: entities, contains_any: [KEY_RATE, CBR, MINFIN]}
+
+    # Сигналы уровня группы засчитываются ТОЛЬКО при подтверждённой
+    # структуре. Блок идентификаторов group_1340xx–group_1347xx устроен
+    # иначе остальных (медиана 65 юрлиц против 1, 10 отраслевых разделов
+    # против 1): по нему «у группы есть кредит» ничего не значит и
+    # затаскивает в аудиторию десятки тысяч лишних компаний.
+    audience:
+      any:
+        - {field: exp_rate, eq: 1}
+        - all:
+            - {field: grp_group_structure_suspect, eq: 0}
+            - any:
+                - {field: grp_has_loan, eq: 1}
+                - {field: grp_has_leasing, eq: 1}
+
+    guards: []
+
+    components:
+      factor_exposure:
+        rules:
+          - when: {all: [{field: CL_PRODUCT_LOA_MARK, eq: 1}, {field: CL_PRODUCT_LEA_MARK, eq: 1}]}
+            value: 1.0
+          - when: {field: CL_PRODUCT_LOA_MARK, eq: 1}
+            value: 0.9
+          - when: {field: CL_PRODUCT_LEA_MARK, eq: 1}
+            value: 0.7
+          - when: {field: CL_PRODUCT_GAR_MARK, eq: 1}
+            value: 0.5
+        default: 0.2
+      sector_match:
+        rules:
+          # Отрасли, где долговая нагрузка структурно выше среднего
+          - when: {field: sector, in: [F, C, H]}
+            value: 0.9
+          - when: {field: sector, in: [G, D, L]}
+            value: 0.7
+        default: 0.5
+      counterparty_proximity:
+        default: 0.1
+      geography:
+        rules:
+          - when: {event: region, eq_field: REGION}
+            value: 1.0
+          - when: {event: scope, eq: national}
+            value: 0.4
+        default: 0.2
+
+    evidence_required:
+      indicators: [key_rate, corporate_floater_spreads, corporate_bond_yields_by_rating]
+      corpus: [policy_rate, fi_strategy_3q26]
+      must_check_timeline: [key_rate_end_2026_forecast]
+
+    product_hints: [fixed_rate_loan, deposit, bond_issue]
+
+    copy:
+      OWNER: "Горизонт удешевления долга сдвигается; планы по инвестпрограмме группы считать по текущей ставке"
+      CFO: "Процентные расходы по плавающей части долга не снизятся; рыночная альтернатива — около 16% для высшего кредитного качества"
+      CHIEF_ACCOUNTANT: "Пересчитать график платежей по кредиту и лизингу на следующий квартал"
+
+  # ------------------------------------------------------------------
+  - id: fx_import
+    name: Импорт и валюта
+    enabled: true
+    threshold: 0.55
+    role_multiplier: {OWNER: 0.9, CFO: 1.0, CHIEF_ACCOUNTANT: 0.9}
+
+    triggers:
+      any:
+        - {event: event_type, in: [fx, regulation, commodity]}
+        - {event: entities, contains_any: [FX_RATE, CNY, USD, FTS]}
+
+    audience:
+      all:
+        - {field: FTS_FLAG, eq: 1}
+
+    guards: []
+
+    components:
+      factor_exposure:
+        rules:
+          - when: {all: [{field: imports_china, eq: 1}, {field: n_import_countries, gte: 3}]}
+            value: 1.0
+          - when: {field: imports_china, eq: 1}
+            value: 0.9
+          - when: {field: n_import_countries, gte: 2}
+            value: 0.7
+        default: 0.5
+      sector_match:
+        rules:
+          - when: {field: okved2, in: ["46", "47"]}
+            value: 1.0
+          - when: {field: sector, in: [C, H]}
+            value: 0.8
+        default: 0.5
+      counterparty_proximity:
+        default: 0.1
+      geography:
+        rules:
+          - when: {event: geo_match_import_country, eq: true}
+            value: 1.0
+          - when: {event: scope, eq: national}
+            value: 0.3
+        default: 0.2
+
+    evidence_required:
+      indicators: [fx]
+      corpus: [policy_rate, macro_1h26]
+      must_check_timeline: [usd_rub_end_2027_forecast]
+
+    product_hints: [fx_hedge, letter_of_credit, factoring]
+
+    copy:
+      OWNER: "Валютная составляющая себестоимости растёт; проверить, выдержит ли модель ценообразования группы"
+      CFO: "Закупка в юанях дорожает; удар приходится на оборотный капитал раньше, чем на маржу"
+      CHIEF_ACCOUNTANT: "Пересчитать таможенную стоимость и НДС по новым контрактам"
+
+  # ------------------------------------------------------------------
+  - id: counterparty_dependence
+    name: Зависимость от контрагента
+    enabled: true
+    threshold: 0.55
+    role_multiplier: {OWNER: 1.0, CFO: 1.0, CHIEF_ACCOUNTANT: 0.6}
+
+    triggers:
+      any:
+        - {event: event_type, in: [sector_demand, counterparty, regulation, commodity]}
+
+    audience:
+      all:
+        - {field: concentration_raw, eq: 1}
+
+    # Главный guard всего конфига. Доля топ-1 плательщика выше 50% есть
+    # у 14 123 компаний, но у 8 582 из них банк видит меньше 20% выручки.
+    # Вывод о зависимости, построенный на сотой доле оборота, формально
+    # верен и практически бесполезен. Сценарий работает только там, где
+    # наблюдаемый поток представителен.
+    guards:
+      - id: flow_coverage
+        require: {field: flow_coverage_tier, in: [medium, high]}
+        on_fail: block
+        message: "Наблюдаемый поток покрывает менее 20% выручки — вывод о зависимости недостоверен"
+      - id: known_counterparty
+        require: {field: unknown_in_share, lte: 0.9}
+        on_fail: penalty
+        penalty: 0.1
+        message: "Почти все плательщики вне периметра банка — отраслевую принадлежность контрагента определить нельзя"
+
+    components:
+      factor_exposure:
+        rules:
+          - when: {field: top_payer_share, gte: 0.8}
+            value: 1.0
+          - when: {field: top_payer_share, gte: 0.65}
+            value: 0.85
+          - when: {field: top_payer_share, gte: 0.5}
+            value: 0.7
+        default: 0.0
+      sector_match:
+        rules:
+          - when: {field: sector, in: [C, F, G]}
+            value: 0.8
+        default: 0.6
+      counterparty_proximity:
+        rules:
+          - when: {all: [{field: flow_coverage_tier, eq: high}, {field: in_cnt, gte: 100}]}
+            value: 1.0
+          - when: {field: flow_coverage_tier, eq: high}
+            value: 0.85
+          - when: {field: flow_coverage_tier, eq: medium}
+            value: 0.6
+        default: 0.2
+      geography:
+        rules:
+          - when: {event: region, eq_field: REGION}
+            value: 1.0
+        default: 0.25
+
+    evidence_required:
+      tools: [get_counterparties, get_peer_stats]
+      corpus: []
+
+    product_hints: [factoring, guarantee]
+
+    copy:
+      OWNER: "Поступления группы зависят от одного плательщика; это стратегический риск, а не операционный"
+      CFO: "Событие бьёт не по клиенту, а по тому, кто ему платит"
+      CHIEF_ACCOUNTANT: "Проверить платёжную дисциплину ключевого контрагента"
+
+  # ------------------------------------------------------------------
+  - id: demand_and_payroll
+    name: Спрос и ФОТ
+    enabled: true
+    threshold: 0.55
+    role_multiplier: {OWNER: 1.0, CFO: 0.9, CHIEF_ACCOUNTANT: 0.8}
+
+    triggers:
+      any:
+        - {event: entities, contains_any: [RETAIL_TURNOVER, WAGES, UNEMPLOYMENT, CPI]}
+        - {event: event_type, in: [labour, inflation]}
+
+    audience:
+      any:
+        - {all: [{field: exp_consumer, eq: 1}, {field: exp_labour, eq: 1}]}
+        - {all: [{field: exp_consumer, eq: 1}, {field: AMOUNT_WORKERS_FNS_GRADATION, in: ["101-250", "Более 251"]}]}
+
+    guards: []
+
+    components:
+      factor_exposure:
+        rules:
+          - when: {all: [{field: exp_labour, eq: 1}, {field: AMOUNT_WORKERS_FNS_GRADATION, eq: "Более 251"}]}
+            value: 1.0
+          - when: {field: exp_labour, eq: 1}
+            value: 0.8
+        default: 0.4
+      sector_match:
+        rules:
+          - when: {field: MAINOKVED_CODE, startswith: ["46.3", "46.4", "47."]}
+            value: 1.0
+          - when: {field: okved2, in: ["46", "47", "55", "56"]}
+            value: 0.8
+        default: 0.3
+      counterparty_proximity:
+        rules:
+          - when: {field: in_cnt, gte: 300}
+            value: 0.8
+          - when: {field: in_cnt, gte: 50}
+            value: 0.5
+        default: 0.2
+      geography:
+        rules:
+          - when: {event: region, eq_field: REGION}
+            value: 1.0
+          - when: {event: scope, eq: national}
+            value: 0.35
+        default: 0.2
+
+    evidence_required:
+      indicators: [retail_and_labour]
+      corpus: [consumption, macro_7m26, inflation_tracker]
+      must_check_timeline: []
+
+    product_hints: [payroll, factoring]
+
+    copy:
+      OWNER: "Спрос замедляется, а ФОТ растёт; маржа сжимается с двух сторон"
+      CFO: "Потребление прошло пик; пересмотреть закупочный цикл и потребность в оборотном финансировании"
+      CHIEF_ACCOUNTANT: "Заложить рост фонда оплаты труда в платёжный календарь"
+
+# Ограничение данных, зафиксированное сознательно.
+# Сценарный режим «Что если» в конфиг не входит и входить не может:
+# в витрине есть бинарные метки продуктов, но нет ни суммы долга, ни ставки,
+# ни структуры портфеля. Качественная оценка чувствительности возможна,
+# денежная — нет. Это ограничение данных, а не нереализованная функция.

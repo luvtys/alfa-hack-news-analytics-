@@ -1,0 +1,268 @@
+# Golden set: 20 пар «компания × событие» с эталонными ожиданиями.
+#
+# Состав выбран намеренно: восемь пар, где система обязана сработать,
+# восемь, где обязана промолчать, и четыре ловушки — случаи, где наивная
+# реализация сработает, а правильная откажется. Ловушки ценнее всего:
+# именно они отличают продукт от новостной ленты с пересказом.
+#
+# Все компании и все их показатели взяты из витрины, не выдуманы.
+
+version: "1.0.0"
+compiled_at: "2026-10-21"
+
+events:
+  key_rate:
+    headline: "Банк России сохранил ключевую ставку на уровне 14,0%"
+    event_type: monetary_policy
+    entities: [CBR, KEY_RATE]
+    scope: national
+    published_at: "2026-09-11T13:30:00+03:00"
+    origin: regulator
+    source: cbr
+
+  cny:
+    headline: "Альфа-Банк: прогноз курса рубля к юаню на конец 2026 года — 13,0"
+    event_type: fx
+    entities: [FX_RATE, CNY]
+    scope: national
+    geo_match_import_country: true
+    published_at: "2026-09-11T13:30:00+03:00"
+    origin: alfa_analytics
+    source: alfa
+
+  investment:
+    headline: "Росстат: инвестиции в основной капитал снизились"
+    event_type: sector_demand
+    entities: [ROSSTAT]
+    scope: national
+    published_at: "2026-10-20T11:00:00+03:00"
+    origin: regulator
+    source: rosstat
+
+  retail:
+    headline: "Росстат: оборот розничной торговли замедлился, рост зарплат продолжился"
+    event_type: sector_demand
+    entities: [ROSSTAT, RETAIL_TURNOVER, WAGES]
+    scope: national
+    published_at: "2026-10-19T11:00:00+03:00"
+    origin: regulator
+    source: rosstat
+
+  gold:
+    headline: "Обзор рынка золота: жёсткий сигнал ФРС охладил ралли"
+    event_type: other
+    entities: [FED, GOLD]
+    scope: global
+    published_at: "2026-09-07T10:00:00+03:00"
+    origin: alfa_analytics
+    source: alfa
+
+  sport:
+    headline: "Итоги тура чемпионата страны по футболу"
+    event_type: other
+    entities: []
+    scope: national
+    published_at: "2026-10-20T20:00:00+03:00"
+    origin: news
+    source: rbc
+
+pairs:
+
+  # ---------- ДОЛЖНО СРАБОТАТЬ (8) ----------
+  - id: P01
+    company: U_106783
+    event: investment
+    role: CFO
+    expect:
+      appears: true
+      scenario: counterparty_dependence
+      score_min: 0.70
+      must_cite_corpus: [macro_1h26]
+      note: "633 плательщика, 75% на топ-1, покрытие 61% — сигнал достоверен"
+
+  - id: P02
+    company: U_106783
+    event: key_rate
+    role: CFO
+    expect:
+      appears: true
+      scenario: cost_of_debt
+      score_min: 0.55
+      must_check_timeline: [key_rate_end_2026_forecast]
+      note: "лизинг без кредита — экспозиция есть, но слабее"
+
+  - id: P03
+    company: U_26030
+    event: key_rate
+    role: CFO
+    expect:
+      appears: true
+      scenario: cost_of_debt
+      score_min: 0.65
+      must_check_timeline: [key_rate_end_2026_forecast]
+      note: "кредит и лизинг одновременно при выручке 60,4 млрд"
+
+  - id: P04
+    company: U_26030
+    event: investment
+    role: CFO
+    expect:
+      appears: true
+      scenario: counterparty_dependence
+      score_min: 0.60
+      note: "236 плательщиков, топ-1 50%, покрытие 22% — на грани, но достоверно"
+
+  - id: P05
+    company: U_1941
+    event: cny
+    role: CFO
+    expect:
+      appears: true
+      scenario: fx_import
+      score_min: 0.70
+      must_cite_corpus: [policy_rate]
+      note: "импорт из Китая, Египта и Турции"
+
+  - id: P06
+    company: U_102920
+    event: retail
+    role: CFO
+    expect:
+      appears: true
+      scenario: demand_and_payroll
+      score_min: 0.60
+      note: "оптовая торговля продуктами с зарплатным проектом"
+
+  - id: P07
+    company: U_13508
+    event: investment
+    role: CFO
+    expect:
+      appears: true
+      scenario: counterparty_dependence
+      score_min: 0.60
+      note: "покрытие 60%, топ-1 54% — достоверный сигнал на средней компании"
+
+  - id: P08
+    company: U_10529
+    event: investment
+    role: CFO
+    expect:
+      appears: true
+      scenario: counterparty_dependence
+      score_min: 0.55
+      note: "оптовая фармацевтика, покрытие 31%, топ-1 56%"
+
+  # ---------- ДОЛЖНО ПРОМОЛЧАТЬ (8) ----------
+  - id: N01
+    company: U_106783
+    event: gold
+    role: CFO
+    expect: {appears: false, note: "золото и ФРС не связаны с производством аппаратуры"}
+
+  - id: N02
+    company: U_106783
+    event: sport
+    role: CFO
+    expect: {appears: false, note: "спортивная новость не должна поднимать ничего"}
+
+  - id: N03
+    company: U_26030
+    event: gold
+    role: CFO
+    expect: {appears: false, note: "торговля топливом и рынок золота не связаны"}
+
+  - id: N04
+    company: U_1941
+    event: sport
+    role: CFO
+    expect: {appears: false}
+
+  - id: N05
+    company: U_4601
+    event: investment
+    role: CFO
+    expect:
+      appears: false
+      forbidden_scenario: counterparty_dependence
+      note: "контрольная компания: 329 плательщиков, топ-1 5,1% — зависимости нет"
+
+  - id: N06
+    company: U_234228
+    event: cny
+    role: CFO
+    expect:
+      appears: false
+      forbidden_scenario: fx_import
+      note: "выручка 56,6 млрд, но FTS_FLAG равен нулю — не импортёр"
+
+  - id: N07
+    company: U_4601
+    event: gold
+    role: CFO
+    expect: {appears: false}
+
+  - id: N08
+    company: U_102920
+    event: sport
+    role: CFO
+    expect: {appears: false}
+
+  # ---------- ЛОВУШКИ (4) ----------
+  - id: T01
+    company: U_182712
+    event: investment
+    role: CFO
+    expect:
+      appears: false
+      forbidden_scenario: counterparty_dependence
+      blocked_by: flow_coverage
+      note: >
+        Топ-1 плательщик даёт 99,9% потока — наивная система закричит о
+        критической зависимости. Но банк видит 3,2% выручки, плательщиков
+        всего три, и вывод построен на одной тридцатой оборота. Guard по
+        покрытию обязан заблокировать сценарий.
+
+  - id: T02
+    company: U_276153
+    event: key_rate
+    role: CFO
+    expect:
+      appears: false
+      forbidden_scenario: cost_of_debt
+      note: >
+        Своих кредитных продуктов нет. Кредит есть у «группы» из 482 юрлиц
+        с неподтверждённой структурой — по такому признаку выводы о
+        долговой нагрузке делать нельзя.
+
+  - id: T03
+    company: U_106783
+    event: investment
+    role: CHIEF_ACCOUNTANT
+    expect:
+      appears: false
+      forbidden_scenario: counterparty_dependence
+      note: >
+        Та же пара, что в P01, но роль другая. Главбуху стратегический
+        вывод о зависимости не нужен: role_multiplier опускает балл ниже
+        порога. Проверка механики ролей, а не текста.
+
+  - id: T04
+    company: U_1941
+    event: cny
+    role: CFO
+    expect:
+      appears: true
+      scenario: fx_import
+      must_cite_corpus: [policy_rate]
+      forbidden_citation:
+        doc: macro_7m26
+        reason: >
+          Прогноз курса и ставки в этом документе от 7 сентября пересмотрен
+          11 сентября. Цитировать его как действующий нельзя.
+      note: "ловушка на темпоральную валидацию: правильный ответ с неправильным источником — это ошибка"
+
+# Отложенная выборка. Пять событий, которые никто в команде не открывает до
+# финального прогона в четверг. Нужна для критерия 05: устойчивое качество
+# на ранее не показанных новостях.
+holdout_file: holdout.yaml

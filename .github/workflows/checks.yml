@@ -1,0 +1,56 @@
+name: VOLTURI Validation Checks
+
+on:
+  push:
+    branches: [ main, backend ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas pyarrow jsonschema pyyaml openai python-dotenv sentence-transformers chromadb pypdf
+
+      # 1. Проверка контракта
+      - name: Validate Contract
+        run: |
+          cd backend/contracts
+          python validate_contract.py
+
+      # 2. Проверка сценариев скоринга
+      - name: Test Scenarios
+        run: |
+          cd backend/scoring/scoring
+          python test_scenarios.py ../../datamart/out
+
+      # 3. Проверка золотого набора
+      - name: Run Golden Set
+        run: |
+          cd backend/golden/golden
+          python run_golden.py --datamart ../../datamart/out --scoring ../scoring
+
+      # 4. Проверка качества инсайтов (цикл для Windows-совместимости путей)
+      - name: Check Insights Quality
+        run: |
+          cd backend/golden/golden
+          for f in ../../contracts/fixtures/*.json; do
+            python check_insight.py "$f"
+          done
+
+      # 5. Проверка промптов
+      - name: Test Prompts
+        run: |
+          cd backend/prompts/prompts
+          python test_prompts.py ../../datamart/out

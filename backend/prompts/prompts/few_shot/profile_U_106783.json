@@ -1,0 +1,42 @@
+{
+  "SYNTHETIC_U": "U_106783",
+  "MAINOKVED_CODE": "27.12",
+  "MAINOKVED_NAME": "Производство электрической распределительной и регулирующей аппаратуры",
+  "sector_name": "Обрабатывающая промышленность",
+  "REGION": "Москва",
+  "CITY": "г. Москва",
+  "revenue_bn_rub": 20.829,
+  "is_large_entity": 1,
+  "AMOUNT_WORKERS_FNS_GRADATION": "Более 251",
+  "COMPANY_AGE_YEARS_GRADATION": "8-15",
+  "CL_TYPE": "CLIENT",
+  "CL_PRODUCT_LOA_MARK": 0,
+  "CL_PRODUCT_LEA_MARK": 1,
+  "CL_PRODUCT_GAR_MARK": 0,
+  "CL_PRODUCT_DEP_MARK": 0,
+  "CL_PRODUCT_ZPP_MARK": 1,
+  "FACTORING_MARK": 0,
+  "FTS_FLAG": 1,
+  "import_countries": [
+    "ОАЭ",
+    "КИТАЙ",
+    "ЛИТВА"
+  ],
+  "key_owner_flag": 1,
+  "GROUP_ID": "group_133161_sb",
+  "grp_n_entities": 1,
+  "grp_revenue_bn_rub": 20.829,
+  "grp_group_structure_suspect": 0,
+  "in_cnt": 633,
+  "out_cnt": 190,
+  "top_payer": "U_92777",
+  "top_payer_share": 0.7547,
+  "unknown_in_share": 0.673,
+  "flow_coverage_tier": "high",
+  "observed_flow_to_revenue": 0.6088,
+  "concentration_flag": 1,
+  "concentration_weak": 0,
+  "features_missing": [
+    "AMOUNT_WORKERS_SPARK_GRADATION"
+  ]
+}
