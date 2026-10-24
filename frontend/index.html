@@ -1,12 +1,20 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twilight Finance | Альфа-Бизнес</title>
+    <title>Alfa Business × Twilight</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
+    <!-- ГЛОБАЛЬНЫЙ ТУМАН -->
+    <div class="fog-overlay" id="fog-layer"></div>
+
+    <!-- CANVAS ДЛЯ ЭФФЕКТОВ -->
+    <canvas id="effects-canvas" style="position: fixed; top: 0; left: 0; pointer-events: none; z-index: 5;"></canvas>
 
     <div id="toast-container" class="toast-container"></div>
 
@@ -31,44 +39,57 @@
         </div>
     </div>
 
-    <header class="app-header"> 
+    <header class="app-header">
         <div class="header-left">
-            <div class="logo">TWILIGHT <span class="logo-accent">FINANCE</span></div>
+            <div class="logo">ALFA BUSINESS <span class="logo-accent">× TWILIGHT</span></div>
         </div>
         <div class="header-right">
-            <select id="role-selector" class="role-select" onchange="changeRole()">
-                <option value="CFO">Финансовый директор</option>
-                <option value="OWNER">Собственник</option>
-                <option value="CHIEF_ACCOUNTANT">Главный бухгалтер</option>
-            </select>
+            <div class="custom-select-wrapper" id="custom-select">
+                <div class="custom-select-trigger">
+                    <span>Финансовый директор</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="custom-options">
+                    <div class="custom-option selected" data-value="CFO">Финансовый директор</div>
+                    <div class="custom-option" data-value="OWNER">Собственник</div>
+                    <div class="custom-option" data-value="CHIEF_ACCOUNTANT">Главный бухгалтер</div>
+                </div>
+            </div>
             <div class="user-avatar">М</div>
         </div>
     </header>
 
     <main class="app-viewport">
-        
+
         <!-- ЭКРАН ВХОДА -->
         <div class="screen entry-screen" id="entry-screen">
+            <div class="entry-bg" id="parallax-bg"></div>
             <div class="entry-content">
                 <div class="entry-badge">ALFA BUSINESS × TWILIGHT</div>
-                <h1 class="entry-title">Wealth Belongs<br>To The Patient</h1>
-                <p class="entry-subtitle">Персональные инсайты для вашего бизнеса на основе данных и аналитики Альфа-Банка.</p>
-                <button class="btn-primary" onclick="startAnalysis()">Войти в систему</button>
+                <h1 class="entry-title">Some truths hide<br>in the fog</h1>
+
+                <div class="quote-block">
+                    <p class="quote-text">— И давно тебе 17?<br>— Уже да...</p>
+                </div>
+
+                <p class="entry-subtitle">Мы не показываем новости. Мы раскрываем скрытые угрозы и возможности, которые
+                    прячутся внутри них.</p>
+
+                <button class="btn-primary" onclick="startAnalysis()">Begin Analysis →</button>
             </div>
         </div>
 
-        <!-- РАБОЧИЙ ЭКРАН (Без скролла) -->
+        <!-- РАБОЧИЙ ЭКРАН -->
         <div class="screen dashboard-screen" id="dashboard-screen" style="display: none;">
-            
-            <!-- Левая панель (Новость) -->
+
             <div class="panel-left">
                 <div id="insight-container" class="fade-in"></div>
-                
-                <!-- Экраны отказов -->
+
                 <div id="blocked-container" class="fade-in" style="display: none;">
                     <div class="blocked-card">
                         <h2 class="blocked-title">Инсайт формируется</h2>
-                        <p class="blocked-text" id="blocked-message-text">Мы обнаружили сигнал, но для точного прогноза не хватает данных.</p>
+                        <p class="blocked-text" id="blocked-message-text">Мы обнаружили сигнал, но для точного прогноза
+                            не хватает данных.</p>
                         <div class="blocked-detail" id="blocked-detail"></div>
                     </div>
                 </div>
@@ -76,36 +97,49 @@
                 <div id="empty-container" class="fade-in" style="display: none;">
                     <div class="blocked-card">
                         <h2 class="blocked-title">Пока всё стабильно</h2>
-                        <p class="blocked-text" id="empty-message-text">За последние сутки релевантных событий не найдено.</p>
+                        <p class="blocked-text" id="empty-message-text">За последние сутки релевантных событий не
+                            найдено.</p>
                         <div class="blocked-detail" id="empty-detail"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Правая панель (Табы) -->
             <div class="panel-right">
-                <!-- Навигация по правой панели -->
                 <div class="tabs-nav">
                     <button class="tab-btn active" onclick="switchTab('actions')" id="tab-actions">Действия</button>
-                    <button class="tab-btn" onclick="switchTab('trace')" id="tab-trace">Трасса ИИ</button>
-                    <button class="tab-btn" onclick="switchTab('chat')" id="tab-chat">Чат</button>
+                    <button class="tab-btn" onclick="switchTab('trace')" id="tab-trace">Путь ИИ</button>
+                    <button class="tab-btn" onclick="switchTab('chat')" id="tab-chat">Спросить</button>
                 </div>
 
-                <!-- Контент табов -->
                 <div class="tab-content active" id="tab-content-actions">
                     <div id="actions-list" class="action-list"></div>
                 </div>
 
                 <div class="tab-content" id="tab-content-trace">
+                    <div class="ai-explain-overlay" id="ai-explain-overlay" style="display: none;">
+                        <div class="ai-explain-content">
+                            <div class="node">Новость</div>
+                            <div class="root-line"></div>
+                            <div class="node">Аналитика Альфы</div>
+                            <div class="root-line"></div>
+                            <div class="node">Профиль компании</div>
+                            <div class="root-line"></div>
+                            <div class="node final">Вывод</div>
+                        </div>
+                        <button class="btn-close-explain" onclick="closeExplainMode()">Закрыть</button>
+                    </div>
+
                     <div class="timeline" id="timeline-steps"></div>
                 </div>
 
                 <div class="tab-content" id="tab-content-chat">
                     <div class="chat-history" id="chat-history">
-                        <div class="chat-msg assistant">Я проанализировал новость. Задайте вопрос.</div>
+                        <div class="chat-msg assistant">Я проанализировал новость. Задайте вопрос по этой компании.
+                        </div>
                     </div>
                     <div class="chat-input-box">
-                        <input type="text" id="chat-input" placeholder="Например: Кто наш крупнейший покупатель?" onkeypress="if(event.key === 'Enter') sendQuestion()">
+                        <input type="text" id="chat-input" placeholder="Кто наш крупнейший покупатель?"
+                            onkeypress="if(event.key === 'Enter') sendQuestion()">
                         <button onclick="sendQuestion()">→</button>
                     </div>
                 </div>
@@ -114,6 +148,8 @@
         </div>
     </main>
 
+    <script src="animations.js"></script>
     <script src="script.js"></script>
 </body>
+
 </html>
