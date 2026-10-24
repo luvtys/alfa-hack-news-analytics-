@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from build_prompts import MODES, ROOT, build, estimate_tokens, json_blocks  # noqa: E402
 
-DATAMART = Path(r"C:\Users\posto\Documents\alfa-hack-news-analityc\alfa-hack-news-analytics-\backend\datamart\datamart\out")
+DATAMART = Path(__file__).parent.parent.parent / "datamart" / "datamart" / "out"
 TOKEN_BUDGET = 3500           # на один системный промпт
 FORBIDDEN = ["доля выручки", "доли выручки", "долю выручки", "доле выручки"]
 
