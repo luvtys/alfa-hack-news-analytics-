@@ -1,0 +1,715 @@
+{
+  "_meta": {
+    "purpose": "Полный структурированный свод фактов из корпуса аналитики Альфа-Банка для инструментов get_macro_indicator() и get_indicator_timeline(). Числа вынесены в поля, чтобы языковая модель их не извлекала из текста и не ошибалась.",
+    "extraction_method": "Постраничное чтение изображений страниц. Текстового слоя в исходных PDF нет ни в одном из девяти файлов.",
+    "pages_total": 64,
+    "pages_read": 64,
+    "extracted_at": "2026-10-20",
+    "publishers": {
+      "macro": "Центр макроэкономического анализа Альфа-Банка — макростатистика, ставка, инфляция, потребление",
+      "kib": "Аналитика Альфа-КИБ — золото, стратегия долгового рынка",
+      "bonds": "Рынок облигаций (Бонд Бриф) — еженедельный обзор"
+    },
+    "critical_warning": "Корпус — это ВРЕМЕННОЙ РЯД ПЕРЕСМОТРОВ, а не набор фактов. Прогноз ключевой ставки на конец 2026 присутствует в пяти версиях за два месяца. Устаревшее значение 13,5% встречается в трёх документах, актуальное 14,0% — в одном. Семантический поиск без фильтра по дате вернёт устаревшее значение большинством голосов."
+  },
+  "documents": [
+    {
+      "id": "fi_strategy_3q26",
+      "title": "Тактический взгляд на 3К26: время собирать камни",
+      "date": "2026-07-22",
+      "publisher": "kib",
+      "pages": 27,
+      "content_pages": 24,
+      "disclaimer_pages": 3,
+      "topics": [
+        "офз",
+        "корпоративные облигации",
+        "флоатеры",
+        "ставка",
+        "бюджет",
+        "нефть",
+        "кредитование юрлиц"
+      ]
+    },
+    {
+      "id": "macro_1h26",
+      "title": "Макростатистика 1П26: понижаем прогноз роста ВВП до 0,1% на 2026 год",
+      "date": "2026-07-31",
+      "publisher": "macro",
+      "pages": 5,
+      "topics": [
+        "ввп",
+        "импорт",
+        "курс",
+        "инфляция",
+        "ставка",
+        "прогнозы"
+      ]
+    },
+    {
+      "id": "consumption",
+      "title": "Потребление на пике",
+      "date": "2026-08-05",
+      "publisher": "macro",
+      "pages": 4,
+      "topics": [
+        "розница",
+        "автомобили",
+        "зарплаты",
+        "безработица",
+        "сбережения"
+      ]
+    },
+    {
+      "id": "inflation_tracker",
+      "title": "Инфляция 25–31 августа: основные выводы",
+      "date": "2026-09-02",
+      "publisher": "macro",
+      "pages": 3,
+      "topics": [
+        "инфляция",
+        "бензин",
+        "сегменты цен"
+      ]
+    },
+    {
+      "id": "macro_7m26",
+      "title": "Макростатистика 7М26: рынок труда в мае-июне даёт сигнал об охлаждении",
+      "date": "2026-09-07",
+      "publisher": "macro",
+      "pages": 4,
+      "topics": [
+        "промпроизводство",
+        "розница",
+        "зарплаты",
+        "ввп",
+        "прогнозы"
+      ]
+    },
+    {
+      "id": "gold_august",
+      "title": "Обзор рынка золота, август 2026",
+      "date": "2026-09-07",
+      "publisher": "kib",
+      "pages": 8,
+      "topics": [
+        "золото",
+        "фрс",
+        "доллар",
+        "китай",
+        "госдолг сша"
+      ]
+    },
+    {
+      "id": "policy_rate",
+      "title": "Ключевая ставка ЦБ РФ: без изменения на 14,0%, риторика стала жёстче",
+      "date": "2026-09-11",
+      "publisher": "macro",
+      "pages": 4,
+      "topics": [
+        "ставка",
+        "инфляция",
+        "ожидания",
+        "бюджет",
+        "прогнозы"
+      ]
+    },
+    {
+      "id": "bond_brief",
+      "title": "Бонд Бриф: итоги недели",
+      "date": "2026-09-14",
+      "publisher": "bonds",
+      "pages": 5,
+      "topics": [
+        "офз",
+        "аукционы минфина",
+        "корпоративные рейтинги",
+        "полюс",
+        "русгидро"
+      ]
+    },
+    {
+      "id": "russian_steels",
+      "title": "Российская сталь: превью 1К21",
+      "date": "2021-04-15",
+      "publisher": "kib",
+      "pages": 4,
+      "topics": [
+        "металлургия",
+        "мультипликаторы",
+        "инвестрекомендации"
+      ],
+      "flag": "УСТАРЕЛ НА 5 ЛЕТ. Не входит в список девяти материалов приложения 2 ТЗ. Содержит целевые цены акций и телефоны конференц-звонков 2021 года. Индексировать только с жёсткой пометкой давности либо исключить."
+    }
+  ],
+  "indicator_timelines": {
+    "_note": "Это главная структура файла. Каждый показатель — не значение, а последовательность пересмотров. Инструмент get_indicator_timeline() должен возвращать весь ряд, чтобы агент мог сказать «прогноз пересмотрен тогда-то с X на Y» — это само по себе инсайт, а не только защита от ошибки.",
+    "key_rate_end_2026_forecast": [
+      {
+        "date": "2026-07-22",
+        "doc": "fi_strategy_3q26",
+        "value": null,
+        "note": "Ожидаем сохранения ставки на уровне 14,25% в июле. Прогноз по среднему уровню КС в 2026 и 2027 гг. будет пересмотрен вверх",
+        "status": "superseded"
+      },
+      {
+        "date": "2026-07-31",
+        "doc": "macro_1h26",
+        "value": 13.5,
+        "note": "Считаем возможным заложить в прогноз ещё два снижения до конца года",
+        "status": "superseded"
+      },
+      {
+        "date": "2026-08-05",
+        "doc": "consumption",
+        "value": 13.5,
+        "status": "superseded"
+      },
+      {
+        "date": "2026-09-07",
+        "doc": "macro_7m26",
+        "value": 13.5,
+        "status": "superseded"
+      },
+      {
+        "date": "2026-09-11",
+        "doc": "policy_rate",
+        "value": 14.0,
+        "note": "Если раньше мы ориентировались на ставку на уровне 13,5% на конец 2026 г., то теперь мы ожидаем её сохранения на текущем значении 14,0% до конца года",
+        "status": "current"
+      }
+    ],
+    "key_rate_actual": [
+      {
+        "date": "2026-01",
+        "value": 16.0
+      },
+      {
+        "date": "2026-02",
+        "value": 15.5
+      },
+      {
+        "date": "2026-03",
+        "value": 15.0
+      },
+      {
+        "date": "2026-04",
+        "value": 14.5
+      },
+      {
+        "date": "2026-06-19",
+        "value": 14.25,
+        "note": "ЦБ уменьшил шаг снижения до 25 б.п."
+      },
+      {
+        "date": "2026-07-24",
+        "value": 14.0
+      },
+      {
+        "date": "2026-09-11",
+        "value": 14.0,
+        "note": "Пауза. Опция снижения не рассматривалась",
+        "status": "current"
+      }
+    ],
+    "key_rate_end_2027_forecast": [
+      {
+        "date": "2026-07-31",
+        "doc": "macro_1h26",
+        "value": 12.0
+      },
+      {
+        "date": "2026-09-11",
+        "doc": "policy_rate",
+        "value": 12.0,
+        "status": "current"
+      }
+    ],
+    "key_rate_avg_2027_forecast": [
+      {
+        "date": "2026-07-31",
+        "doc": "macro_1h26",
+        "value": 12.6
+      },
+      {
+        "date": "2026-09-07",
+        "doc": "macro_7m26",
+        "value": 12.5
+      },
+      {
+        "date": "2026-09-11",
+        "doc": "policy_rate",
+        "value": 13.0,
+        "status": "current"
+      }
+    ],
+    "usd_rub_end_2027_forecast": [
+      {
+        "date": "2026-07-31",
+        "doc": "macro_1h26",
+        "value": 95.0
+      },
+      {
+        "date": "2026-09-07",
+        "doc": "macro_7m26",
+        "value": 95.0
+      },
+      {
+        "date": "2026-09-11",
+        "doc": "policy_rate",
+        "value": 93.0,
+        "status": "current"
+      }
+    ]
+  },
+  "current_values": {
+    "_note": "Срез на самую свежую дату корпуса (14.09.2026). Любое использование обязано сопровождаться as_of_date.",
+    "key_rate": {
+      "value": 14.0,
+      "unit": "%",
+      "as_of": "2026-09-11",
+      "doc": "policy_rate",
+      "next_meetings": [
+        "2026-10-23",
+        "2026-12-18"
+      ],
+      "alfa_expectation": "сохранение паузы 23 октября",
+      "tone": "риторика ужесточилась; опция снижения не рассматривалась"
+    },
+    "ofz_yields": {
+      "as_of": "2026-09-12",
+      "doc": "bond_brief",
+      "ofz_26254_14y": 16.2,
+      "peak_during_week": 16.3,
+      "ofz_1_3y": 13.7,
+      "weekly_change_bp": "от +10 до +17 на среднем и дальнем участках",
+      "note": "После паузы ЦБ долговой рынок получил негатив: инвесторы были разочарованы отсутствием снижения"
+    },
+    "corporate_bond_yields_by_rating": {
+      "as_of": "2026-09-12",
+      "doc": "bond_brief",
+      "unit": "%",
+      "AAA": 15.3,
+      "AA": 17.0,
+      "A": 19.8,
+      "note": "Прямой ориентир стоимости публичного долга по кредитному качеству заёмщика"
+    },
+    "corporate_floater_spreads": {
+      "as_of": "2026-07-20",
+      "doc": "fi_strategy_3q26",
+      "unit": "процентных пунктов к ключевой ставке",
+      "range_AAA": [
+        1.7,
+        2.2
+      ],
+      "examples": [
+        {
+          "issuer": "Атомэнергопром 001Р-04",
+          "rating": "AAA",
+          "margin_to_key_rate": 2.2,
+          "current_coupon": 16.6
+        },
+        {
+          "issuer": "Яндекс 001Р-01",
+          "rating": "AAA",
+          "margin_to_key_rate": 1.7,
+          "current_coupon": 16.0
+        },
+        {
+          "issuer": "РусГидро БО-002Р-06",
+          "rating": "AAA",
+          "margin_to_key_rate": 1.85,
+          "current_coupon": 16.3
+        },
+        {
+          "issuer": "Ростелеком 001Р-18R",
+          "rating": "AAA",
+          "margin_to_key_rate": 1.75,
+          "current_coupon": 16.1
+        },
+        {
+          "issuer": "МегаФон БО-002Р-09",
+          "rating": "AAA",
+          "margin_to_key_rate": 1.8,
+          "current_coupon": 16.1
+        },
+        {
+          "issuer": "Группа Черкизово БО-002Р-02",
+          "rating": "AA",
+          "margin_to_key_rate": 2.0,
+          "current_coupon": 16.3
+        },
+        {
+          "issuer": "Акрон БО-001Р-05",
+          "rating": "AA",
+          "margin_to_key_rate": 1.75,
+          "current_coupon": 16.1
+        },
+        {
+          "issuer": "МТС 002Р-03",
+          "rating": "AAA",
+          "margin_to_key_rate": "RUONIA+2,00",
+          "current_coupon": 17.0
+        }
+      ]
+    },
+    "inflation": {
+      "annual": 6.32,
+      "as_of": "2026-08-31",
+      "doc": "inflation_tracker",
+      "weekly": -0.01,
+      "week": "2026-08-25..2026-08-31",
+      "month_to_date": -0.08,
+      "year_to_date": 4.67,
+      "alfa_forecast_august": -0.07,
+      "segments_wow": {
+        "food": -0.08,
+        "fruits_vegetables": -1.72,
+        "non_food": 0.23,
+        "gasoline": 0.91,
+        "services": -0.1,
+        "tourism": -1.73
+      },
+      "core_sustained_range": [
+        5.0,
+        6.0
+      ],
+      "core_ex_tourism": {
+        "june": 5.7,
+        "july": 7.6
+      },
+      "core_3m_avg": {
+        "from": 4.1,
+        "to": 5.4
+      }
+    },
+    "inflation_expectations": {
+      "households_sep_2026": 13.7,
+      "households_jul_2026": 14.7,
+      "households_avg_2025": 13.2,
+      "households_avg_7m26": 13.3,
+      "enterprises_3m": 7.0,
+      "consensus_inflation_2026_avg": {
+        "was": 6.0,
+        "now": 6.1
+      },
+      "consensus_inflation_2027": {
+        "was": 4.9,
+        "now": 5.2
+      },
+      "doc": "policy_rate"
+    },
+    "corporate_credit_market": {
+      "doc": "fi_strategy_3q26",
+      "as_of": "2026-07-22",
+      "total_loans_to_legal_entities_trn_rub": 102,
+      "floating_rate_share_pct": 67,
+      "key_quote": "При плавающей ставке процентный риск полностью ложится на заёмщика",
+      "credit_growth_yoy_june_pct": 13.7,
+      "cb_forecast_2026_range_pct": [
+        7,
+        11
+      ],
+      "note": "Рост корпоративного кредитования уже идёт выше прогноза ЦБ. Драйвер — льготное кредитование и госкомпании с застройщиками"
+    },
+    "corporate_bond_market": {
+      "doc": "fi_strategy_3q26",
+      "as_of": "2026-07-20",
+      "market_size_trn_rub": 36.3,
+      "share_in_total_corporate_debt_pct": 27,
+      "placements_1h26_trn_rub": 3.2,
+      "floater_share_of_outstanding_pct": 52,
+      "floater_share_of_placements_1h26_pct": 61,
+      "top10_issuers_share_pct": 60,
+      "investment_grade_share_pct": 70,
+      "investor_mix_primary_1h26": {
+        "banks_pct": 43,
+        "trust_management_pct": 17,
+        "individuals_pct": 8
+      }
+    },
+    "ofz_market": {
+      "doc": "fi_strategy_3q26",
+      "size_trn_rub": 32.6,
+      "as_of": "2026-06-01",
+      "ofz_pd_share_pct": 63,
+      "ofz_pk_share_pct": 37,
+      "banks_share_of_investors_pct": 63,
+      "minfin_plan_2026_trn_rub": 6.5,
+      "auction_pause_announced": "2026-07-20",
+      "auction_resumed": "2026-09-09",
+      "recent_auctions": [
+        {
+          "date": "2026-09-09",
+          "issue": "ОФЗ-26218",
+          "maturity": "2031-09-17",
+          "placed_nominal_bn_rub": 51.5,
+          "proceeds_bn_rub": 42.15,
+          "yield_pct": 15.45
+        },
+        {
+          "date": "2026-09-09",
+          "issue": "ОФЗ-26230",
+          "maturity": "2039-03-16",
+          "placed_nominal_bn_rub": 39.16,
+          "proceeds_bn_rub": 24.0,
+          "yield_pct": 15.97
+        }
+      ]
+    },
+    "fx": {
+      "doc": "policy_rate",
+      "as_of": "2026-09-11",
+      "usd_rub_end_2026_forecast": 87.2,
+      "usd_rub_end_2027_forecast": 93.0,
+      "cny_rub_2025_actual": 11.2,
+      "cny_rub_end_2026_forecast": 13.0,
+      "cny_rub_end_2027_forecast": 13.8,
+      "implied_cny_depreciation_2026_pct": 16.1,
+      "business_implication": "Ключевая цифра для импортного сценария: закупка в юанях дорожает примерно на 16% к концу 2026 года и ещё на 6% в 2027. В датасете 2 091 компания с прямым импортом из Китая плюс комбинации стран; среди крупных импортёров доля 49,6%",
+      "implied_cny_depreciation_2027_pct": 6.2,
+      "_derivation": "Проценты посчитаны справочником, а не моделью: 13,0/11,2−1 и 13,8/13,0−1. Правило П1 запрещает модели вычислять их самостоятельно."
+    },
+    "budget": {
+      "doc": "policy_rate",
+      "august_balance_trn_rub": 0.7,
+      "accumulated_deficit_trn_rub": 5.8,
+      "expenses_1h26_growth_yoy_pct": 14,
+      "expenses_plan_2026_trn_rub": 45.11,
+      "deficit_plan_2026_trn_rub": 4.83,
+      "note": "Минфин получил право увеличивать объём размещения ОФЗ в 2026 без дополнительных одобрений — негативно для рынка"
+    },
+    "retail_and_labour": {
+      "doc": "macro_7m26",
+      "retail_turnover_yoy": {
+        "june_2026": 7.3,
+        "may_2026": 7.8,
+        "july_2026": 5.3,
+        "august_2026_forecast": 3.5
+      },
+      "food_segment_june": 4.6,
+      "non_food_segment_june": 9.8,
+      "services_june": 1.7,
+      "gdp_yoy_june": 1.1,
+      "gdp_yoy_2q26": 0.9,
+      "industrial_output_yoy_june": 0.6,
+      "oil_products_output_yoy_june": -21.7,
+      "machinery_output_yoy_june": 17.0,
+      "nominal_wages_yoy": {
+        "may_2026": 10.1,
+        "june_2026": 9.6,
+        "july_2026": 9.0,
+        "august_2026_forecast": 8.5
+      },
+      "real_wages_yoy": {
+        "may_2026": 4.5,
+        "june_2026": 3.4,
+        "july_2026": 2.8,
+        "august_2026_forecast": 2.0
+      },
+      "avg_monthly_wage_rub_may": 110000,
+      "unemployment": {
+        "june_2026": 2.2,
+        "july_2026": 2.3,
+        "august_2026_forecast": 2.3
+      },
+      "retail_credit_yoy_august_forecast": 6.2,
+      "car_sales_june_thousand": 118,
+      "car_sales_yoy_june_pct": 30,
+      "macroprudential_tightening_date": "2026-10-01",
+      "wage_growth_by_sector_may_2026": {
+        "economy": 10,
+        "it_and_communications": 6,
+        "manufacturing": 11,
+        "trade": 11,
+        "education": 11,
+        "construction": 12,
+        "hotels_and_catering": 13,
+        "real_estate": 19
+      }
+    },
+    "forecasts_2026_2027": {
+      "doc": "policy_rate",
+      "as_of": "2026-09-11",
+      "inflation_dec_dec": {
+        "2025": 5.6,
+        "2026": 7.5,
+        "2027": 5.5
+      },
+      "inflation_avg": {
+        "2025": 8.7,
+        "2026": 6.4,
+        "2027": 6.4
+      },
+      "key_rate_end": {
+        "2024": 21.0,
+        "2025": 16.0,
+        "2026": 14.0,
+        "2027": 12.0
+      },
+      "key_rate_avg": {
+        "2025": 19.2,
+        "2026": 14.6,
+        "2027": 13.0
+      },
+      "gdp_growth": {
+        "2025": 1.0,
+        "2026": 0.1,
+        "2027": 0.3
+      },
+      "retail_turnover": {
+        "2026": 3.3,
+        "2027": 1.0
+      },
+      "industrial_output": {
+        "2026": 0.0,
+        "2027": 0.6
+      },
+      "fixed_capital_formation": {
+        "2026": -4.0,
+        "2027": 0.0
+      },
+      "nominal_wages": {
+        "2026": 10.2,
+        "2027": 8.0
+      },
+      "unemployment_end": {
+        "2026": 2.3,
+        "2027": 2.4
+      },
+      "imports_bn_usd": {
+        "2026": 410,
+        "2027": 420
+      },
+      "exports_bn_usd": {
+        "2026": 480,
+        "2027": 450
+      },
+      "urals_usd_bbl": {
+        "2026": 63,
+        "2027": 60
+      },
+      "corporate_loan_portfolio_growth": {
+        "2026": 13,
+        "2027": 10
+      },
+      "corporate_deposit_market_growth": {
+        "2026": 13,
+        "2027": 9
+      },
+      "retail_deposit_market_growth": {
+        "2026": 11,
+        "2027": 12
+      }
+    },
+    "gold": {
+      "doc": "gold_august",
+      "as_of": "2026-08-31",
+      "price_end_july_usd_oz": 4100,
+      "price_peak_august_usd_oz": [
+        4650,
+        4700
+      ],
+      "price_end_august_usd_oz": 4400,
+      "august_return_pct": 9.7,
+      "dxy_august_return_pct": -0.5,
+      "fed_rate_target_range": [
+        3.5,
+        3.75
+      ],
+      "fed_meeting": "2026-09-15..2026-09-16",
+      "hike_probability_mid_august_pct": 30,
+      "hike_probability_aug_31_pct": 70,
+      "us_debt_trn_usd": 40.125,
+      "us_debt_as_of": "2026-09-07",
+      "us_cpi_july_yoy": 3.4,
+      "us_core_cpi_july_yoy": 2.5,
+      "us_pce_july_yoy": 3.7,
+      "us_core_pce_july_yoy": 3.3,
+      "central_bank_purchases_july_t": 23,
+      "central_bank_purchases_jan_jul_2026_t": 130,
+      "central_bank_purchases_jan_jul_2025_t": 160,
+      "china_july_purchase_t": 20,
+      "china_reserves_t": 2366,
+      "china_consecutive_months": 21,
+      "russia_july_sale_t": -6,
+      "russia_ytd_sales_t": -50,
+      "fed_chair": "Кевин Уорш"
+    }
+  },
+  "company_analysis_examples": {
+    "_note": "Бонд Бриф разбирает конкретных эмитентов. Это готовый эталон того, КАК банк сам пишет про компанию — лучший few-shot для промпта агента.",
+    "polyus": {
+      "doc": "bond_brief",
+      "rating": "Эксперт РА ruAAA Стабильный / НКР AAA.ru Стабильный",
+      "rating_date": "2026-09-04",
+      "gold_output_2025_koz": 2529,
+      "bond_debt_bn_rub": 412,
+      "bond_debt_share_of_total": "около половины",
+      "currency_mix": {
+        "rub_pct": 39,
+        "usd_pct": 24,
+        "cny_pct": 37
+      },
+      "july_placement_bn_rub": 125,
+      "debt_to_equity": {
+        "2020": 1.48,
+        "2021": 0.95,
+        "2022": 0.68,
+        "2024": 6.99,
+        "2025": 2.93,
+        "1h2026": 3.61
+      },
+      "alfa_view": "Не ожидаем ухудшения кредитного качества в краткосрочном и среднесрочном горизонте, однако ограниченный формат раскрытия может привести к ухудшению восприятия кредитного риска и росту спреда"
+    },
+    "rushydro": {
+      "doc": "bond_brief",
+      "rating": "АКРА AAA(RU) Стабильный / Эксперт РА ruAAA Стабильный",
+      "rating_date": "2026-09-09",
+      "standalone_creditworthiness": "a+",
+      "installed_capacity_gw_2025": 38.7,
+      "share_of_ues_capacity_pct": 14,
+      "bond_debt_bn_rub": 465,
+      "fixed_coupon_pct": 25,
+      "floating_coupon_pct": 75,
+      "last_floater_spread_pct": 1.35,
+      "fixed_premium_to_ofz_bp": 80,
+      "fcf_bn_rub": {
+        "2024": -123,
+        "2025": -193,
+        "1h2026": -52
+      },
+      "ebitda_margin_pct": {
+        "2024": 27,
+        "2025": 33,
+        "1h2026": 38
+      },
+      "ebitda_to_interest": {
+        "2024": 1.94,
+        "2025": 1.54,
+        "1h2026": 1.91
+      },
+      "net_debt_to_ebitda": {
+        "2024": 3.32,
+        "2025": 3.37,
+        "1h2026": 3.02
+      },
+      "alfa_view": "Высокая программа капзатрат давит на свободный денежный поток; поэтапная либерализация цен с 2026 по 2030 окажет поддержку; ввиду высокой важности для ДФО государство окажет поддержку в случае стресса"
+    }
+  },
+  "rag_design_notes": {
+    "disclaimer_pages": {
+      "count": 9,
+      "share_of_corpus_pct": 14,
+      "problem": "Дисклеймеры почти идентичны во всех документах и семантически близки к любому финансовому запросу (ценные бумаги, риски, инвестиции, валютный риск). Без явного исключения они будут всплывать в выдаче и съедать топ-k.",
+      "fix": "Исключать страницы, где доля совпадения с эталонным текстом дисклеймера выше 80%. Это один regexp по фразе «Генеральная лицензия ЦБ РФ № 1326»."
+    },
+    "title_pages": {
+      "count": 6,
+      "note": "Титульные и разделительные слайды FI Strategy (с.1, 4, 7, 14, 20, 25) и титул Gold digest содержат 2-8 слов. Индексировать бессмысленно, но их заголовки полезны как метаданные раздела для соседних страниц."
+    },
+    "useful_content_pages": 49,
+    "chunking_recommendation": "Чанк = смысловой блок страницы, а не фиксированное окно. В макродокументах это абзац плюс подписи к соответствующему рисунку; в FI Strategy — один буллет слайда. Обязательные поля чанка: doc_id, as_of_date, publisher, page, section_title, indicators_mentioned.",
+    "temporal_conflict_handling": "При конфликте значений одного показателя между документами search_alfa_analytics возвращает самый свежий и помечает остальные superseded, а не усредняет и не отдаёт по релевантности. Факт пересмотра возвращается отдельным полем — это материал для инсайта, а не только защита от ошибки."
+  }
+}

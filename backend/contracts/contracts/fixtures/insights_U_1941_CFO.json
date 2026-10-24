@@ -1,0 +1,191 @@
+{
+  "contract_version": "1.1.0",
+  "synthetic_u": "U_1941",
+  "role_view": "CFO",
+  "generated_at": "2026-10-20T09:12:00+03:00",
+  "total": 1,
+  "items": [
+    {
+      "contract_version": "1.1.0",
+      "insight_id": "ins_20261020_U_1941_001",
+      "generated_at": "2026-10-20T09:12:00+03:00",
+      "client": {
+        "synthetic_u": "U_1941",
+        "group_id": "group_133806_sb",
+        "group_structure_suspect": false,
+        "role_view": "CFO",
+        "features_used": [
+          {
+            "code": "MAINOKVED_CODE",
+            "value": "46.49",
+            "source": "company_features",
+            "label": "Торговля оптовая прочими бытовыми товарами"
+          },
+          {
+            "code": "revenue_bn_rub",
+            "value": 24.107,
+            "source": "company_features",
+            "label": "Выручка, млрд руб."
+          },
+          {
+            "code": "FTS_FLAG",
+            "value": 1,
+            "source": "company_features",
+            "label": "Импортёр по данным ФТС"
+          },
+          {
+            "code": "import_countries",
+            "value": [
+              "КИТАЙ",
+              "ЕГИПЕТ",
+              "ТУРЦИЯ"
+            ],
+            "source": "company_features",
+            "label": "Страны импорта"
+          },
+          {
+            "code": "CL_PRODUCT_LOA_MARK",
+            "value": 1,
+            "source": "company_features",
+            "label": "Кредит"
+          }
+        ],
+        "features_missing": [
+          "AMOUNT_WORKERS_SPARK_GRADATION"
+        ]
+      },
+      "event": {
+        "headline": "Прогноз курса рубля к юаню на конец 2026 года — 13,0 против 11,2 по итогам 2025 года",
+        "published_at": "2026-09-11T13:30:00+03:00",
+        "origin": "alfa_analytics",
+        "source_name": "Центр макроэкономического анализа Альфа-Банка",
+        "source_url": null,
+        "event_type": "fx",
+        "entities": [
+          "Альфа-Банк"
+        ],
+        "confirmed_facts": [
+          "Курс рубля к юаню по итогам 2025 года — 11,2",
+          "Прогноз на конец 2026 года — 13,0",
+          "Прогноз на конец 2027 года — 13,8",
+          "Прогноз курса к доллару на конец 2026 года — 87,2",
+          "Удорожание юаневой закупки к концу 2026 года — 16,1% (расчёт справочника по прогнозу курса)",
+          "Удорожание к концу 2027 года — ещё 6,2%"
+        ],
+        "unconfirmed": []
+      },
+      "relevance": {
+        "scenario_id": "fx_import",
+        "score": 0.8,
+        "threshold": 0.55,
+        "components": {
+          "factor_exposure": 0.35,
+          "sector_match": 0.25,
+          "counterparty_proximity": 0.02,
+          "geography": 0.1,
+          "materiality": 0.08
+        },
+        "explanation": "Компания числится импортёром по данным ФТС, в списке стран — Китай, а закупки в юанях дорожают по прогнозу на 16% за год"
+      },
+      "interpretation": {
+        "headline": "Закупка в юанях дорожает на 16,1% к концу года",
+        "what_happened": "Альфа-Банк заложила в прогноз ослабление рубля к юаню с 11,2 по итогам 2025 года до 13,0 на конец 2026-го и 13,8 на конец 2027-го.",
+        "why_it_matters": "Компания импортирует из Китая, Египта и Турции. Движение с 11,2 до 13,0 — это удорожание юаневой закупки на 16,1% за год и ещё на 6,2% в следующем. Удар приходится на оборотный капитал раньше, чем на маржу: предоплата за партию дорожает немедленно, а цена перепродажи пересматривается с лагом.",
+        "consequences": [
+          {
+            "type": "risk",
+            "horizon": "3-6M",
+            "text": "Потребность в оборотном финансировании растёт пропорционально курсу, даже если физический объём закупок не меняется",
+            "confidence": "high",
+            "evidence_ids": [
+              "e1",
+              "e2"
+            ]
+          },
+          {
+            "type": "risk",
+            "horizon": "6-12M",
+            "text": "Сжатие маржи, если рост закупочной цены не переносится в отпускную",
+            "confidence": "medium",
+            "evidence_ids": [
+              "e1",
+              "e5"
+            ]
+          }
+        ],
+        "bank_view": {
+          "text": "Прогноз курса рубля к юаню: 13,0 на конец 2026 года и 13,8 на конец 2027 года",
+          "doc": "Ключевая ставка ЦБ РФ",
+          "as_of_date": "2026-09-11",
+          "page": 2,
+          "quote": "Курс, конец года, руб./юань: 2025 — 11,2; 2026П — 13,0; 2027П — 13,8",
+          "superseded_by": null
+        },
+        "model_inference": [
+          "Доля юаневых закупок в себестоимости неизвестна: в данных есть факт импорта и список стран, но не объёмы и не валюта контрактов"
+        ]
+      },
+      "actions": [
+        {
+          "text": "Зафиксировать курс по ближайшим контрактам форвардом",
+          "owner_role": "CFO",
+          "product_hint": "fx_hedge",
+          "urgency": "now"
+        },
+        {
+          "text": "Перевести расчёты с новыми поставщиками на аккредитив",
+          "owner_role": "CFO",
+          "product_hint": "letter_of_credit",
+          "urgency": "this_quarter"
+        },
+        {
+          "text": "Пересчитать потребность в оборотном финансировании по курсу 13,0",
+          "owner_role": "CFO",
+          "product_hint": "none",
+          "urgency": "this_quarter"
+        }
+      ],
+      "evidence": [
+        {
+          "id": "e1",
+          "kind": "alfa_view",
+          "ref": "corpus://policy_rate#p2",
+          "label": "Ключевая ставка ЦБ РФ, 11.09.2026, с. 2, таблица прогнозов",
+          "as_of_date": "2026-09-11",
+          "depends_on": []
+        },
+        {
+          "id": "e2",
+          "kind": "verified_fact",
+          "ref": "db://company_features/U_1941#FTS_FLAG",
+          "label": "Импортёр: Китай, Египет, Турция",
+          "as_of_date": null,
+          "depends_on": []
+        },
+        {
+          "id": "e5",
+          "kind": "model_inference",
+          "ref": "inference://pass_through_lag",
+          "label": "Оценка переноса в отпускные цены",
+          "as_of_date": null,
+          "depends_on": [
+            "e1",
+            "e2"
+          ]
+        }
+      ],
+      "data_quality": {
+        "flow_coverage_tier": "low",
+        "observed_flow_to_revenue": 0.09,
+        "unknown_counterparty_share": 0.62,
+        "notes": [
+          "Банк видит 9% выручки компании, поэтому выводы о структуре покупателей здесь не делаются"
+        ]
+      },
+      "disclaimers": [
+        "Прогноз курса — оценка Альфа-Банка на 11 сентября 2026 года, а не гарантированное значение"
+      ],
+      "trace_id": "trc_7b11c4"
+    }
+  ]
+}

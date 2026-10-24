@@ -1,0 +1,29 @@
+{
+  "modes": {
+    "planner": {
+      "file": "system_planner.md",
+      "model": "qwen3.6-35b-a3b",
+      "chars": 8464,
+      "tokens_estimate": 2730
+    },
+    "analyst": {
+      "file": "system_analyst.md",
+      "model": "deepseek-v4.1-flash",
+      "chars": 10592,
+      "tokens_estimate": 3417
+    },
+    "critic": {
+      "file": "system_critic.md",
+      "model": "qwen3.6-35b-a3b",
+      "chars": 9479,
+      "tokens_estimate": 3058
+    },
+    "writer": {
+      "file": "system_writer.md",
+      "model": "gemma-4-26b-a4b",
+      "chars": 8353,
+      "tokens_estimate": 2695
+    }
+  },
+  "total_tokens_estimate": 11900
+}

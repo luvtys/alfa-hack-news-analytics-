@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alfa-hack-2026.local/schemas/trace.json",
+  "title": "Trace",
+  "description": "Ход рассуждения агента. Фронт рисует шаги ТОЛЬКО отсюда. Захардкоженные анимации запрещены: критерий 12 проверяется восстановлением источников по трассе.",
+  "type": "object",
+  "required": ["contract_version", "trace_id", "insight_id", "started_at", "finished_at", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": { "const": "1.1.0" },
+    "trace_id": { "type": "string", "pattern": "^trc_[a-z0-9]+$" },
+    "insight_id": { "type": "string" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "finished_at": { "type": "string", "format": "date-time" },
+    "total_tokens_in": { "type": "integer", "minimum": 0 },
+    "total_tokens_out": { "type": "integer", "minimum": 0 },
+    "cost_rub": { "type": "number", "minimum": 0 },
+    "steps": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["step_no", "agent", "action", "title", "status", "duration_ms"],
+        "additionalProperties": false,
+        "properties": {
+          "step_no": { "type": "integer", "minimum": 1 },
+          "agent": { "enum": ["planner", "analyst", "critic", "writer"] },
+          "action": { "enum": ["plan", "tool_call", "llm_call", "self_check", "retry"] },
+          "title": {
+            "type": "string", "maxLength": 80,
+            "description": "то, что пользователь видит: «Проверяю контрагентов», «Сверяю с аналитикой Альфы»"
+          },
+          "tool": { "type": ["string", "null"] },
+          "args": { "type": ["object", "null"] },
+          "result_summary": { "type": ["string", "null"], "description": "короткий итог шага для раскрывающегося блока" },
+          "result_ref": { "type": ["string", "null"], "description": "ссылка на evidence или на строку витрины" },
+          "status": { "enum": ["ok", "empty", "failed", "superseded"] },
+          "duration_ms": { "type": "integer", "minimum": 0 },
+          "tokens_in": { "type": ["integer", "null"] },
+          "tokens_out": { "type": ["integer", "null"] },
+          "model": { "type": ["string", "null"] },
+          "note": { "type": ["string", "null"], "description": "для retry — что именно забраковал критик" }
+        }
+      }
+    }
+  }
+}

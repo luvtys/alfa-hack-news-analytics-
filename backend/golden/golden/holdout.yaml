@@ -1,0 +1,104 @@
+# ОТЛОЖЕННАЯ ВЫБОРКА — НЕ ОТКРЫВАТЬ ДО ФИНАЛЬНОГО ПРОГОНА
+#
+# Критерий 05 требует устойчивого качества на ранее не показанных новостях.
+# Если команда настраивала пороги и промпты на этих парах, критерий нечем
+# подтвердить: любое число будет результатом подгонки.
+#
+# Правило: файл открывается один раз, в четверг вечером, после заморозки
+# кода. Прогон делает один человек, результат записывается как есть —
+# включая провалы. Провал на holdout не чинится правкой конфига, он
+# фиксируется и объясняется на питче. Это и есть честная метрика.
+#
+# Запуск: python3 run_golden.py --golden holdout.yaml ...
+
+version: "1.0.0"
+sealed_at: "2026-10-21"
+
+events:
+  ofz_yield:
+    headline: "Доходность длинных ОФЗ превысила 16,5% на фоне нового предложения Минфина"
+    event_type: monetary_policy
+    entities: [MINFIN, OFZ, KEY_RATE]
+    scope: national
+    published_at: "2026-10-22T10:00:00+03:00"
+    origin: news
+    source: rbc
+
+  fuel_prices:
+    headline: "Рост оптовых цен на топливо ускорился до 0,91% за неделю"
+    event_type: commodity
+    entities: [FUEL, CPI]
+    scope: national
+    published_at: "2026-10-22T12:00:00+03:00"
+    origin: regulator
+    source: rosstat
+
+  macroprudential:
+    headline: "С 1 октября ужесточены макропруденциальные лимиты по автокредитам"
+    event_type: regulation
+    entities: [CBR]
+    scope: national
+    published_at: "2026-10-01T09:00:00+03:00"
+    origin: regulator
+    source: cbr
+
+  wages:
+    headline: "Росстат: рост номинальных зарплат замедлился до 9,0% г/г"
+    event_type: labour
+    entities: [ROSSTAT, WAGES]
+    scope: national
+    published_at: "2026-10-22T11:00:00+03:00"
+    origin: regulator
+    source: rosstat
+
+  weather:
+    headline: "Синоптики предупредили о похолодании в центральных регионах"
+    event_type: other
+    entities: []
+    scope: national
+    published_at: "2026-10-22T08:00:00+03:00"
+    origin: news
+    source: rbc
+
+pairs:
+  - id: H01
+    company: U_26030
+    event: fuel_prices
+    role: CFO
+    expect:
+      appears: true
+      note: "оптовая торговля топливом и новость о топливных ценах — прямое попадание"
+
+  - id: H02
+    company: U_106783
+    event: ofz_yield
+    role: CFO
+    expect:
+      appears: true
+      scenario: cost_of_debt
+      note: "действующий лизинг, событие о стоимости долга"
+
+  - id: H03
+    company: U_102920
+    event: wages
+    role: CFO
+    expect:
+      appears: true
+      scenario: demand_and_payroll
+      note: "зарплатный проект и оптовая торговля продуктами"
+
+  - id: H04
+    company: U_1941
+    event: macroprudential
+    role: CFO
+    expect:
+      appears: false
+      note: "автокредиты к оптовой торговле бытовыми товарами отношения не имеют"
+
+  - id: H05
+    company: U_4601
+    event: weather
+    role: CFO
+    expect:
+      appears: false
+      note: "погодная новость не должна поднимать ничего"

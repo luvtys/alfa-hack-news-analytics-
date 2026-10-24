@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alfa-hack-2026.local/schemas/insight.json",
+  "title": "Insight",
+  "description": "Единица ленты. Замороженный контракт между бэкендом и фронтендом. Любое изменение — через общий чат и новую версию contract_version.",
+  "type": "object",
+  "required": ["contract_version", "insight_id", "generated_at", "client", "event", "relevance", "interpretation", "actions", "evidence", "trace_id"],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": { "const": "1.1.0" },
+    "insight_id": { "type": "string", "pattern": "^ins_[0-9]{8}_U_[0-9]+_[0-9]{3}$" },
+    "generated_at": { "type": "string", "format": "date-time" },
+
+    "client": {
+      "type": "object",
+      "required": ["synthetic_u", "role_view", "features_used"],
+      "additionalProperties": false,
+      "properties": {
+        "synthetic_u": { "type": "string", "pattern": "^U_[0-9]+$" },
+        "group_id": { "type": ["string", "null"] },
+        "group_structure_suspect": {
+          "type": "boolean",
+          "description": "true — структура группы не подтверждена, выводы на уровне группы не делаются"
+        },
+        "role_view": { "enum": ["OWNER", "CFO", "CHIEF_ACCOUNTANT"] },
+        "features_used": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["code", "value", "source"],
+            "additionalProperties": false,
+            "properties": {
+              "code": { "type": "string" },
+              "value": {},
+              "source": { "enum": ["company_features", "group_features", "counterparty_stats", "affiliates"] },
+              "label": { "type": "string", "description": "человекочитаемое имя для UI" }
+            }
+          }
+        },
+        "features_missing": {
+          "type": "array", "items": { "type": "string" },
+          "description": "поля, которых нет у этого клиента. Агенту запрещено на них ссылаться"
+        }
+      }
+    },
+
+    "event": {
+      "type": "object",
+      "required": ["headline", "published_at", "event_type", "origin"],
+      "additionalProperties": false,
+      "properties": {
+        "headline": { "type": "string", "maxLength": 300 },
+        "published_at": { "type": "string", "format": "date-time" },
+        "origin": {
+          "enum": ["news", "alfa_analytics", "regulator"],
+          "description": "откуда пришло событие; news — из парсера, остальное — из корпуса"
+        },
+        "source_name": { "type": ["string", "null"] },
+        "source_url": { "type": ["string", "null"], "format": "uri" },
+        "event_type": {
+          "enum": ["monetary_policy", "fx", "inflation", "commodity", "regulation",
+                   "sector_demand", "counterparty", "labour", "budget", "other"]
+        },
+        "entities": { "type": "array", "items": { "type": "string" } },
+        "confirmed_facts": { "type": "array", "items": { "type": "string" } },
+        "unconfirmed": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "relevance": {
+      "type": "object",
+      "required": ["scenario_id", "score", "threshold", "components"],
+      "additionalProperties": false,
+      "properties": {
+        "scenario_id": {
+          "enum": ["cost_of_debt", "fx_import", "counterparty_dependence", "demand_and_payroll"],
+          "description": "сценарий, по которому событие попало в ленту. Нужен фронту для группировки и валидатору для проверки правила отказа"
+        },
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+        "components": {
+          "type": "object",
+          "required": ["factor_exposure", "sector_match", "counterparty_proximity", "geography", "materiality"],
+          "additionalProperties": false,
+          "properties": {
+            "factor_exposure": { "type": "number", "minimum": 0, "maximum": 1 },
+            "sector_match": { "type": "number", "minimum": 0, "maximum": 1 },
+            "counterparty_proximity": { "type": "number", "minimum": 0, "maximum": 1 },
+            "geography": { "type": "number", "minimum": 0, "maximum": 1 },
+            "materiality": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+        "explanation": { "type": "string", "description": "одна строка для подсказки «почему это наверху»" }
+      }
+    },
+
+    "interpretation": {
+      "type": "object",
+      "required": ["headline", "what_happened", "why_it_matters", "consequences"],
+      "additionalProperties": false,
+      "properties": {
+        "headline": { "type": "string", "maxLength": 160, "description": "заголовок карточки, пишет агент" },
+        "what_happened": { "type": "string" },
+        "why_it_matters": { "type": "string" },
+        "consequences": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["type", "horizon", "text", "confidence", "evidence_ids"],
+            "additionalProperties": false,
+            "properties": {
+              "type": { "enum": ["risk", "opportunity", "neutral"] },
+              "horizon": { "enum": ["0-3M", "3-6M", "6-12M"] },
+              "text": { "type": "string" },
+              "confidence": { "enum": ["low", "medium", "high"] },
+              "evidence_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+            }
+          }
+        },
+        "bank_view": {
+          "type": ["object", "null"],
+          "required": ["text", "doc", "as_of_date", "page"],
+          "additionalProperties": false,
+          "properties": {
+            "text": { "type": "string" },
+            "doc": { "type": "string" },
+            "as_of_date": { "type": "string", "format": "date" },
+            "page": { "type": "integer", "minimum": 1 },
+            "quote": { "type": "string" },
+            "superseded_by": {
+              "type": ["string", "null"],
+              "description": "id более свежего документа, если этот пересмотрен"
+            }
+          }
+        },
+        "model_inference": {
+          "type": "array", "items": { "type": "string" },
+          "description": "утверждения, которые НЕ подтверждены ни данными, ни аналитикой. UI помечает их отдельно"
+        }
+      }
+    },
+
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["text", "owner_role"],
+        "additionalProperties": false,
+        "properties": {
+          "text": { "type": "string" },
+          "owner_role": { "enum": ["OWNER", "CFO", "CHIEF_ACCOUNTANT"] },
+          "product_hint": {
+            "enum": ["fixed_rate_loan", "deposit", "bond_issue", "fx_hedge",
+                     "letter_of_credit", "factoring", "guarantee", "leasing",
+                     "payroll", "none"]
+          },
+          "urgency": { "enum": ["now", "this_quarter", "watch"] }
+        }
+      }
+    },
+
+    "evidence": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "ref", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^e[0-9]+$" },
+          "kind": {
+            "enum": ["verified_fact", "alfa_view", "news", "model_inference"],
+            "description": "verified_fact — из витрины; alfa_view — цитата аналитики; news — внешний источник; model_inference — вывод модели"
+          },
+          "ref": { "type": "string", "description": "db://, corpus://, https:// или inference://" },
+          "label": { "type": "string", "description": "подпись для кликабельного бейджа" },
+          "as_of_date": { "type": ["string", "null"], "format": "date" },
+          "depends_on": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+
+    "data_quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "flow_coverage_tier": { "enum": ["high", "medium", "low", "negligible", "unknown"] },
+        "observed_flow_to_revenue": { "type": ["number", "null"] },
+        "unknown_counterparty_share": { "type": ["number", "null"] },
+        "notes": { "type": "array", "items": { "type": "string" } },
+        "refused": {
+          "type": "array",
+          "description": "Выводы, которые система отказалась делать по этому клиенту. Фронт рисует это блоком отказа, а НЕ предупреждением рядом с цифрой: предупреждение оставляет неверный вывод на экране. Решение команды от 21.10.2026.",
+          "items": {
+            "type": "object",
+            "required": ["scenario_id", "guard", "message"],
+            "additionalProperties": false,
+            "properties": {
+              "scenario_id": {
+                "enum": ["cost_of_debt", "fx_import", "counterparty_dependence", "demand_and_payroll"]
+              },
+              "guard": {
+                "enum": ["flow_coverage", "known_counterparty", "group_structure"],
+                "description": "идентификатор guard-а из scenarios.yaml, который остановил вывод"
+              },
+              "message": { "type": "string", "description": "причина отказа человеческими словами, показывается пользователю" },
+              "missing_field": { "type": ["string", "null"], "description": "какого именно поля не хватило" }
+            }
+          }
+        }
+      }
+    },
+
+    "disclaimers": { "type": "array", "items": { "type": "string" } },
+    "trace_id": { "type": "string", "pattern": "^trc_[a-z0-9]+$" }
+  }
+}

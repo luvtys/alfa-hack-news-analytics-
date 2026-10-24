@@ -1,0 +1,42 @@
+{
+  "SYNTHETIC_U": "U_4601",
+  "MAINOKVED_CODE": "46.32",
+  "MAINOKVED_NAME": "Торговля оптовая мясом и мясными продуктами",
+  "sector_name": "Торговля",
+  "REGION": "Санкт-Петербург",
+  "CITY": "г. Санкт-Петербург",
+  "revenue_bn_rub": 16.86,
+  "is_large_entity": 1,
+  "AMOUNT_WORKERS_FNS_GRADATION": "Более 251",
+  "COMPANY_AGE_YEARS_GRADATION": "16-25",
+  "CL_TYPE": "CLIENT",
+  "CL_PRODUCT_LOA_MARK": 1,
+  "CL_PRODUCT_LEA_MARK": 0,
+  "CL_PRODUCT_GAR_MARK": 0,
+  "CL_PRODUCT_DEP_MARK": 0,
+  "CL_PRODUCT_ZPP_MARK": 1,
+  "FACTORING_MARK": 0,
+  "FTS_FLAG": 1,
+  "import_countries": [
+    "ИНДИЯ",
+    "КИТАЙ",
+    "ЕГИПЕТ"
+  ],
+  "key_owner_flag": 1,
+  "GROUP_ID": "group_133667_sb",
+  "grp_n_entities": 3,
+  "grp_revenue_bn_rub": 17.499,
+  "grp_group_structure_suspect": 0,
+  "in_cnt": 329,
+  "out_cnt": 145,
+  "top_payer": "U_3361",
+  "top_payer_share": 0.0511,
+  "unknown_in_share": 0.5471,
+  "flow_coverage_tier": "high",
+  "observed_flow_to_revenue": 0.7114,
+  "concentration_flag": 0,
+  "concentration_weak": 0,
+  "features_missing": [
+    "AMOUNT_WORKERS_SPARK_GRADATION"
+  ]
+}
