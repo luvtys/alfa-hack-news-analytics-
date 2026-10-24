@@ -23,34 +23,34 @@ jobs:
         run: |
           pip install pandas pyarrow jsonschema pyyaml openai python-dotenv sentence-transformers chromadb pypdf
 
-      # 1. Проверка контракта
+      # 1. Проверка контракта (исправлен путь)
       - name: Validate Contract
         run: |
-          cd backend/contracts
+          cd backend/contracts/contracts
           python validate_contract.py
 
-      # 2. Проверка сценариев скоринга
+      # 2. Проверка сценариев скоринга (исправлен путь к datamart)
       - name: Test Scenarios
         run: |
           cd backend/scoring/scoring
-          python test_scenarios.py ../../datamart/out
+          python test_scenarios.py ../../datamart/datamart/out
 
-      # 3. Проверка золотого набора
+      # 3. Проверка золотого набора (исправлены пути)
       - name: Run Golden Set
         run: |
           cd backend/golden/golden
-          python run_golden.py --datamart ../../datamart/out --scoring ../scoring
+          python run_golden.py --datamart ../../datamart/datamart/out --scoring ../../scoring/scoring
 
-      # 4. Проверка качества инсайтов (цикл для Windows-совместимости путей)
+      # 4. Проверка качества инсайтов (исправлен путь к фикстурам)
       - name: Check Insights Quality
         run: |
           cd backend/golden/golden
-          for f in ../../contracts/fixtures/*.json; do
+          for f in ../../contracts/contracts/fixtures/*.json; do
             python check_insight.py "$f"
           done
 
-      # 5. Проверка промптов
+      # 5. Проверка промптов (исправлен путь к datamart)
       - name: Test Prompts
         run: |
           cd backend/prompts/prompts
-          python test_prompts.py ../../datamart/out
+          python test_prompts.py ../../datamart/datamart/out
