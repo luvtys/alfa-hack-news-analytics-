@@ -8,25 +8,28 @@
 </head>
 <body>
 
-    <header class="app-header">
+    <div id="toast-container" class="toast-container"></div>
+
+    <header class="app-header"> 
         <div class="header-left">
             <div class="logo">АЛЬФА-БИЗНЕС</div>
             <span class="header-divider"></span>
             <span class="header-title">Новостная аналитика</span>
         </div>
         <div class="header-right">
-            <select id="role-selector" class="role-select" onchange="changeRole()">
-                <option value="CFO">Финансовый директор</option>
-                <option value="OWNER">Собственник</option>
-                <option value="CHIEF_ACCOUNTANT">Главный бухгалтер</option>
-            </select>
+            <div class="role-wrapper" title="Аналитика адаптируется под вашу роль">
+                <select id="role-selector" class="role-select" onchange="changeRole()">
+                    <option value="CFO">Финансовый директор</option>
+                    <option value="OWNER">Собственник</option>
+                    <option value="CHIEF_ACCOUNTANT">Главный бухгалтер</option>
+                </select>
+            </div>
             <div class="user-avatar">М</div>
         </div>
     </header>
 
     <main class="container">
         
-        <!-- ТОЧКА ВХОДА -->
         <div class="entry-widget fade-in" id="entry-widget">
             <div class="widget-content">
                 <div class="widget-icon">📊</div>
@@ -38,59 +41,58 @@
             <button class="widget-btn" onclick="startAnalysis()">Открыть ленту →</button>
         </div>
 
-        <!-- Демо-панель -->
         <div class="demo-panel" id="demo-panel" style="display: none;">
-            <span class="demo-label">Демо-сценарии:</span>
+            <span class="demo-label">Демо-сценарии (dev):</span>
             <div class="demo-buttons">
                 <button onclick="switchState('insight')" class="btn-demo active" id="btn-insight">Инсайт</button>
-                <button onclick="switchState('blocked')" class="btn-demo" id="btn-blocked">Отказ</button>
-                <button onclick="switchState('empty')" class="btn-demo" id="btn-empty">Пусто</button>
+                <button onclick="switchState('blocked')" class="btn-demo" id="btn-blocked">Формируется</button>
+                <button onclick="switchState('empty')" class="btn-demo" id="btn-empty">Стабильно</button>
             </div>
         </div>
 
-        <!-- Сетка -->
         <div class="dashboard-grid" id="dashboard-grid" style="display: none;">
             
+            <!-- ЛЕВАЯ КОЛОНКА (Только контент) -->
             <div class="col-left">
-                <!-- Профиль клиента -->
-                <div id="client-profile" class="client-profile fade-in" style="display: none;">
-                    <div class="profile-header">
-                        <span>Профиль компании</span>
-                        <span class="profile-id" id="profile-u-id">-</span>
-                    </div>
-                    <div class="profile-tags" id="profile-tags"></div>
-                    <div class="profile-missing" id="profile-missing" style="display:none; margin-top: 10px; font-size: 11px; color: #d32f2f; font-style: italic;"></div>
-                </div>
-
-                <!-- Карточка инсайта -->
                 <div id="insight-container" class="fade-in"></div>
                 
-                <!-- Экран отказа -->
                 <div id="blocked-container" class="fade-in" style="display: none;">
-                    <div class="blocked-card">
-                        <div class="blocked-icon-wrapper">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EF3124" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <div class="blocked-card blocked-soft">
+                        <div class="blocked-icon-wrapper soft">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M6 2h12M6 22h12M6 2v4a6 6 0 0 0 12 0V2M6 22v-4a6 6 0 0 1 12 0v4"></path></svg>
                         </div>
-                        <h2>Вывод не сделан</h2>
-                        <p class="blocked-message" id="blocked-message-text">Сигнал найден, но данных для вывода недостаточно.</p>
+                        <h2>Инсайт формируется</h2>
+                        <p class="blocked-message" id="blocked-message-text">Мы обнаружили сигнал, но для точного прогноза не хватает данных. Мы продолжим мониторинг и уведомим вас.</p>
                         <div class="blocked-detail" id="blocked-detail"></div>
                     </div>
                 </div>
 
-                <!-- Экран пустой ленты -->
                 <div id="empty-container" class="fade-in" style="display: none;">
                     <div class="blocked-card empty-state">
                         <div class="blocked-icon-wrapper empty">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         </div>
-                        <h2>Нет актуальных инсайтов</h2>
-                        <p class="blocked-message" id="empty-message-text">За последние сутки релевантных событий не найдено.</p>
+                        <h2>Пока всё стабильно</h2>
+                        <p class="blocked-message" id="empty-message-text">За последние сутки релевантных событий не найдено. Хотите настроить уведомления об изменении ключевых ставок или действий конкурентов?</p>
                         <div class="blocked-detail" id="empty-detail"></div>
+                        <button class="action-btn primary-btn" onclick="alert('Переход в настройки алертов')">Настроить алерт</button>
                     </div>
                 </div>
             </div>
 
+            <!-- ПРАВАЯ КОЛОНКА (Трасса, Профиль, Чат) -->
             <div class="col-right">
+                
+                <!-- Профиль компании (Перенесен сюда) -->
+                <div id="client-profile" class="side-panel fade-in" style="display: none;">
+                    <div class="panel-header">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF3124" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <h3>Данные компании</h3>
+                    </div>
+                    <div class="profile-tags" id="profile-tags"></div>
+                    <div class="profile-missing" id="profile-missing" style="display:none; margin-top: 12px; font-size: 11px; color: #d32f2f; font-style: italic;"></div>
+                </div>
+
                 <div id="trace-container" class="side-panel fade-in" style="display: none;">
                     <div class="panel-header">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF3124" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>

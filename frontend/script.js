@@ -9,27 +9,39 @@ document.addEventListener("DOMContentLoaded", () => {
     const chatContainer = document.getElementById('chat-container');
     const clientProfile = document.getElementById('client-profile');
     const timeline = document.getElementById('timeline-steps');
+    const dashboardGrid = document.getElementById('dashboard-grid');
 
     let currentRole = 'CFO';
     
     const ROLE_MAPPING = {
-        'CFO': { file: 'insights_U_26030_CFO.json', uid: 'U_26030' },
-        'OWNER': { file: 'insights_U_1941_CFO.json', uid: 'U_1941' },
-        'CHIEF_ACCOUNTANT': { file: 'insights_U_106783_CFO.json', uid: 'U_106783' }
+        'CFO': { file: 'insights_U_26030_CFO.json', uid: 'U_26030', toast: 'Акцент на финансовые риски' },
+        'OWNER': { file: 'insights_U_1941_CFO.json', uid: 'U_1941', toast: 'Акцент на стратегические риски' },
+        'CHIEF_ACCOUNTANT': { file: 'insights_U_106783_CFO.json', uid: 'U_106783', toast: 'Акцент на контрагентов' }
     };
+
+    function showToast(message) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<span>🔔</span> ${message}`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            toast.addEventListener('animationend', () => toast.remove());
+        }, 3500);
+    }
 
     window.startAnalysis = function() {
         document.getElementById('entry-widget').style.display = 'none';
         document.getElementById('demo-panel').style.display = 'flex';
-        document.getElementById('dashboard-grid').style.display = 'grid';
+        dashboardGrid.style.display = 'grid';
         switchState('insight');
     };
 
-    // Отрисовка профиля с обработкой features_missing
+    // Отрисовка профиля (только теги, без лишнего заголовка)
     function renderProfile(client) {
         if (!client || !client.features_used) return;
         clientProfile.style.display = 'block';
-        document.getElementById('profile-u-id').innerText = client.synthetic_u || '-';
         
         const tagsContainer = document.getElementById('profile-tags');
         tagsContainer.innerHTML = client.features_used.map(f => `
@@ -38,7 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         `).join('');
 
-        // Показываем отсутствующие данные (если есть) - переводим на человеческий язык
         const missingContainer = document.getElementById('profile-missing');
         if (client.features_missing && client.features_missing.length > 0) {
             const missingMapping = {
@@ -46,11 +57,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 'AMOUNT_WORKERS_FNS_GRADATION': 'численность сотрудников (ФНС)',
                 'FTS_COUNTRY_NAME': 'страна закупки (ФТС)'
             };
-            
             const humanReadableMissing = client.features_missing.map(code => missingMapping[code] || code);
-            
             missingContainer.style.display = 'block';
-            missingContainer.innerText = `Ограничение данных: нет информации о ${humanReadableMissing.join(', ')}`;
+            missingContainer.innerText = `Ограничение: нет данных о ${humanReadableMissing.join(', ')}`;
         } else {
             missingContainer.style.display = 'none';
         }
@@ -77,16 +86,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (item.client) renderProfile(item.client);
 
-            // Считаем скор для вывода
             const scorePercent = item.relevance ? (item.relevance.score * 100).toFixed(0) : '?';
             const thresholdPercent = item.relevance ? (item.relevance.threshold * 100).toFixed(0) : '?';
+            const scoreTitle = item.relevance ? `Оценка релевантности: ${scorePercent}% (порог ${thresholdPercent}%)` : '';
 
             insightContainer.innerHTML = `
                 <div class="insight-card">
                     <div class="insight-header">
                         <div class="header-tags">
                             <span class="tag-alfa">Аналитика Альфа-Банка</span>
-                            <span class="tag-score">Релевантность: ${scorePercent}% (порог ${thresholdPercent}%)</span>
+                            <span class="tag-score" title="${scoreTitle}">Релевантность: ${scorePercent}%</span>
                         </div>
                         <span class="date">${new Date(event.published_at).toLocaleDateString('ru-RU')}</span>
                     </div>
@@ -100,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="consequences">
                         ${interp.consequences.map(c => `
                             <div class="consequence ${c.type === 'risk' ? 'risk' : 'opportunity'}">
-                                <span class="badge badge-${c.type}">${c.type === 'risk' ? 'Риск' : 'Возможность'}</span>
+                                <span class="badge badge-${c.type}">${c.type === 'risk' ? '⚠️ Риск' : '💡 Возможность'}</span>
                                 <p>${c.text}</p>
                             </div>
                         `).join('')}
@@ -172,7 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }).join('');
         } catch (error) {
             console.error("Ошибка трассы", error);
-            timeline.innerHTML = `<p style="color:#888; font-size:12px;">Трасса недоступна.</p>`;
+            timeline.innerHTML = `<p style="color:#999; font-size:12px;">Трасса недоступна.</p>`;
         }
     }
 
@@ -213,10 +222,19 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     window.changeRole = function() {
-        currentRole = document.getElementById('role-selector').value;
-        document.getElementById('insight-container').innerHTML = '';
-        document.getElementById('timeline-steps').innerHTML = '';
-        switchState('insight');
+        const select = document.getElementById('role-selector');
+        currentRole = select.value;
+        const roleInfo = ROLE_MAPPING[currentRole];
+        
+        showToast(`Интерфейс переключен: ${roleInfo.toast}`);
+        dashboardGrid.classList.add('switching');
+
+        setTimeout(() => {
+            document.getElementById('insight-container').innerHTML = '';
+            document.getElementById('timeline-steps').innerHTML = '';
+            switchState('insight');
+            dashboardGrid.classList.remove('switching');
+        }, 300);
     };
 
     window.sendQuestion = function() {
