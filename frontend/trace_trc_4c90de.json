@@ -1,0 +1,53 @@
+{
+  "trace_id": "trc_4c90de",
+  "steps": [
+    {
+      "step_no": 1,
+      "agent": "planner",
+      "action": "plan",
+      "title": "Составляю план проверки",
+      "status": "ok",
+      "note": null,
+      "tool": null,
+      "result_summary": "Четыре шага: профиль клиента, контрагенты, отраслевая аналитика, сверка дат",
+      "tokens_in": 1180,
+      "tokens_out": 210
+    },
+    {
+      "step_no": 7,
+      "agent": "critic",
+      "action": "self_check",
+      "title": "Проверяю себя",
+      "status": "failed",
+      "note": "Нарушено правило 4: формулировка «доля выручки» применительно к платежам",
+      "tool": null,
+      "result_summary": "Забраковано: утверждение о доле выручки от ключевого покупателя не подтверждено — банк видит 61%, а не весь оборот",
+      "tokens_in": 1420,
+      "tokens_out": 180
+    },
+    {
+      "step_no": 8,
+      "agent": "analyst",
+      "action": "retry",
+      "title": "Переписываю формулировку",
+      "status": "retry",
+      "note": "«Доля выручки» заменена на «доля в наблюдаемом банком потоке», добавлено примечание о покрытии 61%",
+      "tool": null,
+      "result_summary": "Формулировка исправлена",
+      "tokens_in": 350,
+      "tokens_out": 90
+    },
+    {
+      "step_no": 9,
+      "agent": "critic",
+      "action": "self_check",
+      "title": "Проверяю повторно",
+      "status": "ok",
+      "note": null,
+      "tool": null,
+      "result_summary": "Шесть из шести пунктов пройдены: все числа найдены в ответах инструментов, у каждого вывода есть evidence_id",
+      "tokens_in": null,
+      "tokens_out": null
+    }
+  ]
+}

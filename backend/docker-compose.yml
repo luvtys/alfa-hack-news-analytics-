@@ -6,8 +6,16 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./datamart:/app/datamart
+      # Монтируем папку frontend из корня проекта внутрь контейнера
+      - ../frontend:/frontend
+      # Монтируем кэш RAG, чтобы не собирать его каждый раз
       - ./chroma_db:/app/chroma_db
+      # Монтируем данные
       - ./data:/app/data
-    env_file:
-      - .env
+      - ./datamart:/app/datamart
+    environment:
+      # Прокидываем переменные из .env
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    # Указываем, что папка frontend ищется по пути /frontend
+    working_dir: /app
