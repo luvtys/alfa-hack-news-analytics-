@@ -1,5 +1,5 @@
 const USE_REAL_API = true;
-const API_URL = 'http://127.0.0.1:8000/api/insight';
+const FEED_URL = 'http://127.0.0.1:8000/api/feed';
 
 document.addEventListener("DOMContentLoaded", () => {
     const insightContainer = document.getElementById('insight-container');
@@ -13,22 +13,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let currentRole = 'CFO';
     let currentData = null;
+    let feedItems = [];
+    let currentIndex = 0;
 
     const ROLE_MAPPING = {
         'CFO': { uid: 'U_26030', toast: 'Фокус: Финансовые риски', label: 'Финансовый директор' },
         'OWNER': { uid: 'U_1941', toast: 'Фокус: Стратегические риски', label: 'Собственник' },
         'CHIEF_ACCOUNTANT': { uid: 'U_106783', toast: 'Фокус: Контрагенты', label: 'Главный бухгалтер' }
-    };
-
-    const DEMO_EVENT = {
-        id: "event_001",
-        title: "ЦБ РФ сохранил ключевую ставку на уровне 14% годовых",
-        facts: "Совет директоров Банка России принял решение сохранить ключевую ставку на уровне 14% годовых.",
-        date: "2026-09-11",
-        region: "Свердловская область",
-        event_type: "monetary_policy",
-        entities: ["KEY_RATE", "CBR"],
-        scope: "national"
     };
 
     // --- КАСТОМНЫЙ ДРОПДАУН ---
@@ -96,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.effects.spawnInsightParticles(window.innerWidth / 2, window.innerHeight / 2);
             }
 
-            loadInsight();
+            loadFeed();
             loadTrace();
         }, 3000);
     };
@@ -114,40 +105,32 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // --- РЕЖИМ ОБЪЯСНЕНИЯ (ГРАФ) ---
+    // --- РЕЖИМ ОБЪЯСНЕНИЯ ---
     window.openExplainMode = function () {
-        const overlay = document.getElementById('ai-explain-overlay');
-        overlay.style.display = 'flex';
-
-        const nodes = overlay.querySelectorAll('.node');
-        nodes.forEach((node, index) => {
-            setTimeout(() => {
-                node.classList.add('active');
-                if (nodes[index + 1] && window.effects) {
-                    const rect1 = node.getBoundingClientRect();
-                    const rect2 = nodes[index + 1].getBoundingClientRect();
-                    window.effects.drawRoot(
-                        rect1.left + rect1.width / 2, rect1.bottom,
-                        rect2.left + rect2.width / 2, rect2.top
-                    );
-                }
-            }, index * 800);
-        });
+        document.getElementById('ai-explain-overlay').style.display = 'flex';
     };
 
     window.closeExplainMode = function () {
         document.getElementById('ai-explain-overlay').style.display = 'none';
     };
 
-    // --- СМЕНА РОЛИ ---
+    // --- СМЕНА РОЛИ (С ОЧИСТКОЙ ЧАТА И ТАБОВ) ---
     window.changeRole = function (roleValue) {
         currentRole = roleValue;
+        currentIndex = 0;
+
+        // Очищаем чат при смене роли
+        document.getElementById('chat-history').innerHTML = '<div class="chat-msg assistant">Я проанализировал новость. Задайте вопрос по этой компании.</div>';
+
+        // Сбрасываем табы (пока грузится - скрыты)
+        document.getElementById('tab-actions').style.display = 'none';
+        document.getElementById('tab-trace').style.display = 'none';
 
         fogLayer.style.opacity = '1';
         fogLayer.style.background = 'radial-gradient(circle at 50% 50%, rgba(95, 141, 144, 0.6) 0%, rgba(7, 19, 21, 1) 100%)';
 
         setTimeout(() => {
-            loadInsight();
+            loadFeed();
             setTimeout(() => {
                 fogLayer.style.opacity = '';
                 fogLayer.style.background = '';
@@ -182,123 +165,192 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- ЗАГРУЗКА ИНСАЙТА ---
-    async function loadInsight() {
+    // --- ЗАГРУЗКА ЛЕНТЫ ---
+    async function loadFeed() {
+        const roleData = ROLE_MAPPING[currentRole];
+
+        insightContainer.innerHTML = '<div style="color: #fff; padding: 20px;">Загрузка ленты...</div>';
+        insightContainer.style.display = 'block';
+        blockedContainer.style.display = 'none';
+        emptyContainer.style.display = 'none';
+
+        document.getElementById('actions-list').innerHTML = '';
+
         try {
-            const roleData = ROLE_MAPPING[currentRole];
-
-            insightContainer.innerHTML = '<div style="color: #fff; padding: 20px;">Загрузка данных...</div>';
-            insightContainer.style.display = 'block';
-            blockedContainer.style.display = 'none';
-            emptyContainer.style.display = 'none';
-
-            document.getElementById('actions-list').innerHTML = '';
-            document.getElementById('tab-actions').style.display = 'block';
-
-            const response = await fetch(API_URL, {
+            const response = await fetch(FEED_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     company_id: roleData.uid,
-                    role: currentRole,
-                    event: DEMO_EVENT
+                    role: currentRole
                 })
             });
 
             const result = await response.json();
 
-            if (result.status === 'skipped') {
+            if (!result.items || result.items.length === 0) {
+                feedItems = [];
                 insightContainer.style.display = 'none';
                 emptyContainer.style.display = 'block';
-                document.getElementById('empty-message-text').innerText = result.reason || 'Новость нерелевантна для этой компании.';
-                document.getElementById('actions-list').innerHTML = '';
+                document.getElementById('empty-message-text').innerText = "Нет актуальных инсайтов для этой роли";
                 document.getElementById('tab-actions').style.display = 'none';
+                document.getElementById('tab-trace').style.display = 'none';
                 return;
             }
 
-            if (result.status === 'error') {
-                throw new Error(result.message);
-            }
-
-            if (result.status === 'success') {
-                const item = result.insight;
-                currentData = item;
-
-                if (item.data_quality && item.data_quality.refused && item.data_quality.refused.length > 0) {
-                    insightContainer.style.display = 'none';
-                    blockedContainer.style.display = 'block';
-                    document.getElementById('blocked-message-text').innerText = item.data_quality.refused[0].message;
-                    document.getElementById('actions-list').innerHTML = '';
-                    document.getElementById('tab-actions').style.display = 'none';
-                    return;
-                }
-
-                const event = item.event;
-                const interp = item.interpretation;
-                const scorePercent = item.relevance ? (item.relevance.score * 100).toFixed(0) : '?';
-
-                insightContainer.style.display = 'block';
-                blockedContainer.style.display = 'none';
-                emptyContainer.style.display = 'none';
-
-                const bankQuote = interp.bank_view.quote || interp.bank_view.text;
-
-                insightContainer.innerHTML = `
-                    <div class="insight-card">
-                        <div class="insight-header">
-                            <div class="header-tags">
-                                <span class="tag-alfa">Alfa Analytics</span>
-                                <span class="tag-score">Релевантность ${scorePercent}%</span>
-                            </div>
-                            <span class="date">${new Date(event.published_at).toLocaleDateString('ru-RU')}</span>
-                        </div>
-                        <h1 class="event-headline">${event.headline}</h1>
-                        
-                        <div class="why-matters-box">
-                            <h3>Скрытый сигнал</h3>
-                            <p>${interp.why_it_matters}</p>
-                        </div>
-                        
-                        <div class="consequences">
-                            ${interp.consequences.map(c => `
-                                <div class="consequence ${c.type}">
-                                    <span class="badge badge-${c.type}">${c.type === 'risk' ? 'Угроза' : 'Возможность'}</span>
-                                    <p>${c.text}</p>
-                                </div>
-                            `).join('')}
-                        </div>
-                        
-                        <div class="bank-view-box">
-                            <div class="bank-view-header">
-                                <h4>Мнение Альфа-Банка</h4>
-                                <span class="bank-date">${interp.bank_view.as_of_date || 'Архив'}</span>
-                            </div>
-                            <blockquote>"${bankQuote}"</blockquote>
-                            <div class="source-links">
-                                ${item.evidence ? item.evidence.map(e => `
-                                    <a href="javascript:void(0)" class="evidence-badge ${e.kind}" onclick="openSourceModal('${e.label}', '${e.ref}')">
-                                        ${e.kind === 'verified_fact' ? 'Факт' : e.kind === 'alfa_view' ? 'Аналитика' : 'AI'}
-                                    </a>
-                                `).join('') : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                document.getElementById('actions-list').innerHTML = item.actions.map(a => `
-                    <button class="action-btn" onclick="openActionModal('${a.text}', 'Переход в раздел: ${a.product_hint}')">
-                        ${a.text}
-                    </button>
-                `).join('');
-                document.getElementById('tab-actions').style.display = 'block';
-            }
+            feedItems = result.items;
+            currentIndex = 0;
+            renderCurrentItem();
 
         } catch (error) {
-            console.error(error);
-            insightContainer.style.display = 'block';
-            insightContainer.innerHTML = `<div style="color:#EF3124; padding: 20px;">Ошибка загрузки данных: ${error.message}</div>`;
+            console.error("Ошибка загрузки ленты:", error);
+            insightContainer.innerHTML = `<div style="color:#EF3124; padding: 20px;">Ошибка загрузки: ${error.message}</div>`;
+            document.getElementById('tab-actions').style.display = 'none';
+            document.getElementById('tab-trace').style.display = 'none';
         }
     }
+
+    // --- ОТРИСОВКА ТЕКУЩЕЙ НОВОСТИ (С ПРАВИЛЬНЫМ УПРАВЛЕНИЕМ ТАБАМИ) ---
+    function renderCurrentItem() {
+        if (!feedItems || feedItems.length === 0) return;
+
+        const item = feedItems[currentIndex];
+
+        // 1. Если новость не прошла скоринг (skipped) — скрываем табы
+        if (item.status === 'skipped') {
+            insightContainer.innerHTML = `
+                <div class="blocked-card" style="margin: 20px auto; max-width: 800px;">
+                    <h2 class="blocked-title">Пока всё стабильно</h2>
+                    <p class="blocked-text">${item.reason || 'Новость нерелевантна для этой компании.'}</p>
+                </div>
+            `;
+            document.getElementById('tab-actions').style.display = 'none';
+            document.getElementById('tab-trace').style.display = 'none';
+            return;
+        }
+
+        const ins = item.insight;
+        const ev = ins.event;
+        const interp = ins.interpretation;
+        const scorePercent = ins.relevance ? (ins.relevance.score * 100).toFixed(0) : '?';
+        const bankQuote = interp.bank_view.quote || interp.bank_view.text || "Аналитика банка недоступна.";
+
+        currentData = ins;
+
+        // 2. Проверяем guard (refused)
+        let hasRefused = ins.data_quality && ins.data_quality.refused && ins.data_quality.refused.length > 0;
+
+        let refusedBlock = '';
+        if (hasRefused) {
+            refusedBlock = `
+                <div class="blocked-card" style="margin-top: 20px;">
+                    <h2 class="blocked-title">Вывод не сделан</h2>
+                    <p class="blocked-text">${ins.data_quality.refused[0].message}</p>
+                </div>
+            `;
+            document.getElementById('tab-actions').style.display = 'none';
+            document.getElementById('tab-trace').style.display = 'none';
+        } else {
+            document.getElementById('tab-actions').style.display = 'block';
+            document.getElementById('tab-trace').style.display = 'block';
+
+            document.getElementById('actions-list').innerHTML = ins.actions.map(a => `
+                <button class="action-btn" onclick="openActionModal('${a.text}', 'Переход в раздел: ${a.product_hint}')">
+                    ${a.text}
+                </button>
+            `).join('');
+        }
+
+        const prevDisabled = currentIndex === 0;
+        const nextDisabled = currentIndex === feedItems.length - 1;
+
+        // 3. Рисуем карточку с кнопками поверх
+        insightContainer.innerHTML = `
+            <div style="position: relative; width: 100%; max-width: 100%; margin: 0; padding: 0 40px;">
+                
+                <!-- Кнопка Назад -->
+                <button onclick="prevNews()" ${prevDisabled ? 'disabled' : ''} 
+                    style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); z-index: 10; 
+                    width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.4); 
+                    border: 1px solid rgba(255,255,255,0.1); color: #fff; cursor: ${prevDisabled ? 'default' : 'pointer'};
+                    display: flex; align-items: center; justify-content: center; font-size: 18px;
+                    opacity: ${prevDisabled ? '0.1' : '0.5'}; transition: all 0.2s;"
+                    onmouseover="if(!this.disabled) { this.style.opacity='1'; this.style.background='rgba(239,49,36,0.8)'; }"
+                    onmouseout="if(!this.disabled) { this.style.opacity='0.5'; this.style.background='rgba(0,0,0,0.4)'; }">
+                    ←
+                </button>
+
+                <!-- Карточка -->
+                <div class="insight-card" style="margin: 0; width: 100%;">
+                    <div class="insight-header">
+                        <div class="header-tags">
+                            <span class="tag-alfa">Alfa Analytics</span>
+                            <span class="tag-score">Релевантность ${scorePercent}%</span>
+                        </div>
+                        <span class="date">${new Date(ev.published_at).toLocaleDateString('ru-RU')}</span>
+                    </div>
+                    <h1 class="event-headline">${ev.headline}</h1>
+                    
+                    <div class="why-matters-box">
+                        <h3>Скрытый сигнал</h3>
+                        <p>${interp.why_it_matters || "Анализ влияния на компанию недоступен."}</p>
+                    </div>
+                    
+                    <div class="consequences">
+                        ${interp.consequences.map(c => `
+                            <div class="consequence ${c.type}">
+                                <span class="badge badge-${c.type}">${c.type === 'risk' ? 'Угроза' : 'Возможность'}</span>
+                                <p>${c.text || "Детали не указаны."}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="bank-view-box">
+                        <div class="bank-view-header">
+                            <h4>Мнение Альфа-Банка</h4>
+                            <span class="bank-date">${interp.bank_view.as_of_date || 'Архив'}</span>
+                        </div>
+                        <blockquote>"${bankQuote}"</blockquote>
+                        <div class="source-links">
+                            ${ins.evidence ? ins.evidence.map(e => `
+                                <a href="javascript:void(0)" class="evidence-badge ${e.kind}" onclick="openSourceModal('${e.label}', '${e.ref}')">
+                                    ${e.kind === 'verified_fact' ? 'Факт' : e.kind === 'alfa_view' ? 'Аналитика' : 'AI'}
+                                </a>
+                            `).join('') : ''}
+                        </div>
+                    </div>
+                    ${refusedBlock}
+                </div>
+
+                <!-- Кнопка Вперед -->
+                <button onclick="nextNews()" ${nextDisabled ? 'disabled' : ''} 
+                    style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); z-index: 10; 
+                    width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.4); 
+                    border: 1px solid rgba(255,255,255,0.1); color: #fff; cursor: ${nextDisabled ? 'default' : 'pointer'};
+                    display: flex; align-items: center; justify-content: center; font-size: 18px;
+                    opacity: ${nextDisabled ? '0.1' : '0.5'}; transition: all 0.2s;"
+                    onmouseover="if(!this.disabled) { this.style.opacity='1'; this.style.background='rgba(239,49,36,0.8)'; }"
+                    onmouseout="if(!this.disabled) { this.style.opacity='0.5'; this.style.background='rgba(0,0,0,0.4)'; }">
+                    →
+                </button>
+            </div>
+        `;
+    }
+
+    // --- НАВИГАЦИЯ ПО ЛЕНТЕ ---
+    window.prevNews = function () {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderCurrentItem();
+        }
+    };
+
+    window.nextNews = function () {
+        if (currentIndex < feedItems.length - 1) {
+            currentIndex++;
+            renderCurrentItem();
+        }
+    };
 
     // --- ЗАГРУЗКА ТРАССЫ ---
     async function loadTrace() {
@@ -321,21 +373,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
             }).join('');
 
-            if (!document.getElementById('explain-btn')) {
-                const btn = document.createElement('button');
-                btn.id = 'explain-btn';
-                btn.className = 'action-btn';
-                btn.style.marginTop = '20px';
-                btn.innerText = 'Как получен вывод? (Граф)';
-                btn.onclick = openExplainMode;
-                timeline.appendChild(btn);
-            }
+            // Добавляем кнопку графа, если ее нет
+            // if (!document.getElementById('explain-btn')) {
+            //     const btn = document.createElement('button');
+            //     btn.id = 'explain-btn';
+            //     btn.className = 'action-btn';
+            //     btn.style.marginTop = '20px';
+            //     btn.innerText = 'Как получен вывод? (Граф)';
+            //     btn.onclick = openExplainMode; // <-- ВОТ ЭТА СТРОКА
+            //     timeline.appendChild(btn);
+            // }
         } catch (error) {
             console.error("Ошибка трассы", error);
         }
     }
 
-    // --- ЧАТ (НАСТОЯЩИЙ API) ---
+    // --- ЧАТ ---
     window.sendQuestion = async function () {
         const input = document.getElementById('chat-input');
         const history = document.getElementById('chat-history');
