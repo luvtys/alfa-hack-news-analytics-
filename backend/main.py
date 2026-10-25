@@ -8,6 +8,7 @@ import os
 from typing import List, Optional
 
 from agent_core import agent_plan_and_execute
+from rag import search as rag_search
 
 app = FastAPI(title="Alfa Hack News Analytics API")
 
@@ -46,6 +47,12 @@ class InsightRequest(BaseModel):
     event: NewsEvent
     role: Optional[str] = "CFO"
 
+class ChatRequest(BaseModel):
+    question: str
+    company_id: str
+    role: str
+    context: Optional[str] = None
+
 @app.get("/")
 def serve_frontend():
     index_path = os.path.join(FRONTEND_DIR, "index.html")
@@ -68,6 +75,36 @@ def generate_insight(request: InsightRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/chat")
+def chat_with_ai(request: ChatRequest):
+    # Отвечаем на основе данных, без вызова LLM
+    question_lower = request.question.lower()
+    context = request.context or ""
+    
+    # 1. Риски
+    if "риск" in question_lower or "угроз" in question_lower:
+        if "Риски:" in context:
+            parts = context.split("Риски:")
+            if len(parts) > 1:
+                return {"answer": f"Основной риск: {parts[1].strip()[:300]}"}
+        return {"answer": "Риск: Рост процентных расходов по кредитам и лизингу из-за сохранения высокой ключевой ставки."}
+    
+    # 2. Возможности
+    if "возможност" in question_lower:
+        return {"answer": "Возможность: Рефинансирование лизинга под текущую ставку или использование факторинга для управления ликвидностью."}
+    
+    # 3. Действия
+    if "действ" in question_lower or "что делать" in question_lower:
+        return {"answer": "Рекомендация: Провести аудит лизинговых платежей и рассмотреть рефинансирование долга."}
+    
+    # 4. Ставка
+    if "ставк" in question_lower:
+        return {"answer": "Ставка ЦБ сохранена на уровне 14%. Это означает, что кредиты и лизинг не подешевеют в ближайшее время."}
+    
+    # 5. Если вопрос не распознан
+    return {"answer": "Я могу ответить на вопросы про риски, возможности, действия или ключевую ставку. Уточните вопрос."}
+
+# --- СУЩЕСТВУЮЩИЕ ЭНДПОИНТЫ ---
 @app.get("/api/companies/{company_id}")
 def get_company(company_id: str):
     conn = get_db()
