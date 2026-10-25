@@ -20,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
         'CHIEF_ACCOUNTANT': { uid: 'U_106783', toast: 'Фокус: Контрагенты', label: 'Главный бухгалтер' }
     };
 
-    // ТЕСТОВОЕ СОБЫТИЕ ДЛЯ ДЕМО (пока нет парсера новостей)
     const DEMO_EVENT = {
         id: "event_001",
         title: "ЦБ РФ сохранил ключевую ставку на уровне 14% годовых",
@@ -72,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // --- СТАРТ АНАЛИЗА С ТЕКСТОМ "ХАО" ---
+    // --- СТАРТ АНАЛИЗА ---
     window.startAnalysis = function () {
         const overlay = document.createElement('div');
         overlay.className = 'fog-reveal-overlay';
@@ -183,16 +182,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- ЗАГРУЗКА ИНСАЙТА (POST-ЗАПРОС) ---
+    // --- ЗАГРУЗКА ИНСАЙТА ---
     async function loadInsight() {
         try {
             const roleData = ROLE_MAPPING[currentRole];
 
-            // Показываем загрузку
             insightContainer.innerHTML = '<div style="color: #fff; padding: 20px;">Загрузка данных...</div>';
             insightContainer.style.display = 'block';
             blockedContainer.style.display = 'none';
             emptyContainer.style.display = 'none';
+
+            document.getElementById('actions-list').innerHTML = '';
+            document.getElementById('tab-actions').style.display = 'block';
 
             const response = await fetch(API_URL, {
                 method: 'POST',
@@ -206,11 +207,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const result = await response.json();
 
-            // Обработка отказа (skipped)
             if (result.status === 'skipped') {
                 insightContainer.style.display = 'none';
                 emptyContainer.style.display = 'block';
                 document.getElementById('empty-message-text').innerText = result.reason || 'Новость нерелевантна для этой компании.';
+                document.getElementById('actions-list').innerHTML = '';
+                document.getElementById('tab-actions').style.display = 'none';
                 return;
             }
 
@@ -222,11 +224,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 const item = result.insight;
                 currentData = item;
 
-                // Обработка guard'ов (refused)
                 if (item.data_quality && item.data_quality.refused && item.data_quality.refused.length > 0) {
                     insightContainer.style.display = 'none';
                     blockedContainer.style.display = 'block';
                     document.getElementById('blocked-message-text').innerText = item.data_quality.refused[0].message;
+                    document.getElementById('actions-list').innerHTML = '';
+                    document.getElementById('tab-actions').style.display = 'none';
                     return;
                 }
 
@@ -238,7 +241,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 blockedContainer.style.display = 'none';
                 emptyContainer.style.display = 'none';
 
-                // Проверка на наличие цитаты (если нет - используем text)
                 const bankQuote = interp.bank_view.quote || interp.bank_view.text;
 
                 insightContainer.innerHTML = `
@@ -288,6 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         ${a.text}
                     </button>
                 `).join('');
+                document.getElementById('tab-actions').style.display = 'block';
             }
 
         } catch (error) {
@@ -297,11 +300,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- ЗАГРУЗКА ТРАССЫ (МОК, ТАК КАК БЭК ПОКА НЕ ОТДАЕТ TRACE) ---
+    // --- ЗАГРУЗКА ТРАССЫ ---
     async function loadTrace() {
         try {
-            // Для демо используем моковый файл трассы, который лежит у фронта
-            const response = await fetch('trace_trc_4c90de.json');
+            const response = await fetch('/static/trace_trc_4c90de.json');
             const data = await response.json();
             timeline.innerHTML = data.steps.map(step => {
                 let icon = '✓';
@@ -333,8 +335,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- ЧАТ (ОТВЕЧАЕТ НА ОСНОВЕ РЕАЛЬНЫХ ДАННЫХ) ---
-    window.sendQuestion = function () {
+    // --- ЧАТ (НАСТОЯЩИЙ API) ---
+    window.sendQuestion = async function () {
         const input = document.getElementById('chat-input');
         const history = document.getElementById('chat-history');
         if (!input.value.trim()) return;
@@ -344,26 +346,47 @@ document.addEventListener("DOMContentLoaded", () => {
         input.value = '';
         history.scrollTop = history.scrollHeight;
 
+        const loadingMsg = document.createElement('div');
+        loadingMsg.className = 'chat-msg assistant';
+        loadingMsg.innerHTML = 'Анализирую...';
+        history.appendChild(loadingMsg);
+        history.scrollTop = history.scrollHeight;
+
         fogLayer.style.opacity = '1';
         fogLayer.style.background = 'radial-gradient(circle at 50% 50%, rgba(95, 141, 144, 0.3) 0%, transparent 100%)';
-        setTimeout(() => { fogLayer.style.opacity = ''; fogLayer.style.background = ''; }, 1000);
 
-        setTimeout(() => {
-            let answer = "В данных витрины ответа пока нет.";
+        try {
+            const roleData = ROLE_MAPPING[currentRole];
+
+            let contextText = "";
             if (currentData) {
-                const q = userQuestion.toLowerCase();
-                if (q.includes('покупател') || q.includes('плательщик')) {
-                    // Ищем в why_it_matters упоминание контрагентов
-                    answer = `На основе данных: ${currentData.interpretation.why_it_matters}`;
-                } else if (q.includes('риск')) {
-                    const risks = currentData.interpretation.consequences.filter(c => c.type === 'risk').map(c => c.text).join(' ');
-                    answer = risks ? `Угрозы: ${risks}` : 'Явных угроз в инсайте не выделено.';
-                } else {
-                    answer = `Главное: ${currentData.interpretation.why_it_matters.split('.')[0]}.`;
-                }
+                contextText = `Заголовок: ${currentData.event.headline}. Сигнал: ${currentData.interpretation.why_it_matters}. Риски: ${currentData.interpretation.consequences.filter(c => c.type === 'risk').map(c => c.text).join(' ')}`;
             }
-            history.innerHTML += `<div class="chat-msg assistant">${answer}</div>`;
+
+            const response = await fetch('http://127.0.0.1:8000/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question: userQuestion,
+                    company_id: roleData.uid,
+                    role: currentRole,
+                    context: contextText
+                })
+            });
+
+            const result = await response.json();
+
+            history.removeChild(loadingMsg);
+            history.innerHTML += `<div class="chat-msg assistant">${result.answer}</div>`;
             history.scrollTop = history.scrollHeight;
-        }, 1500);
+
+        } catch (error) {
+            history.removeChild(loadingMsg);
+            history.innerHTML += `<div class="chat-msg assistant" style="color:#EF3124;">Ошибка: ${error.message}</div>`;
+            history.scrollTop = history.scrollHeight;
+        } finally {
+            fogLayer.style.opacity = '';
+            fogLayer.style.background = '';
+        }
     };
 });
