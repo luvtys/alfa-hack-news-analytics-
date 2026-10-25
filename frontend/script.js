@@ -1,5 +1,5 @@
-const USE_REAL_API = false;
-const API_URL = 'http://localhost:8000/api/insights';
+const USE_REAL_API = true;
+const API_URL = 'http://127.0.0.1:8000/api/insight';
 
 document.addEventListener("DOMContentLoaded", () => {
     const insightContainer = document.getElementById('insight-container');
@@ -15,9 +15,21 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentData = null;
 
     const ROLE_MAPPING = {
-        'CFO': { file: 'insights_U_26030_CFO.json', uid: 'U_26030', toast: 'Фокус: Финансовые риски', label: 'Финансовый директор' },
-        'OWNER': { file: 'insights_U_1941_CFO.json', uid: 'U_1941', toast: 'Фокус: Стратегические риски', label: 'Собственник' },
-        'CHIEF_ACCOUNTANT': { file: 'insights_U_106783_CFO.json', uid: 'U_106783', toast: 'Фокус: Контрагенты', label: 'Главный бухгалтер' }
+        'CFO': { uid: 'U_26030', toast: 'Фокус: Финансовые риски', label: 'Финансовый директор' },
+        'OWNER': { uid: 'U_1941', toast: 'Фокус: Стратегические риски', label: 'Собственник' },
+        'CHIEF_ACCOUNTANT': { uid: 'U_106783', toast: 'Фокус: Контрагенты', label: 'Главный бухгалтер' }
+    };
+
+    // ТЕСТОВОЕ СОБЫТИЕ ДЛЯ ДЕМО (пока нет парсера новостей)
+    const DEMO_EVENT = {
+        id: "event_001",
+        title: "ЦБ РФ сохранил ключевую ставку на уровне 14% годовых",
+        facts: "Совет директоров Банка России принял решение сохранить ключевую ставку на уровне 14% годовых.",
+        date: "2026-09-11",
+        region: "Свердловская область",
+        event_type: "monetary_policy",
+        entities: ["KEY_RATE", "CBR"],
+        scope: "national"
     };
 
     // --- КАСТОМНЫЙ ДРОПДАУН ---
@@ -62,28 +74,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- СТАРТ АНАЛИЗА С ТЕКСТОМ "ХАО" ---
     window.startAnalysis = function () {
-        // 1. Создаем оверлей
         const overlay = document.createElement('div');
         overlay.className = 'fog-reveal-overlay';
-
-        // 2. Добавляем три текста "хао"
         overlay.innerHTML = `
             <div class="fog-reveal-text">хао...</div>
             <div class="fog-reveal-text">хао...</div>
             <div class="fog-reveal-text">хао...</div>
         `;
-
         document.body.appendChild(overlay);
 
-        // 3. Активируем затемнение
-        setTimeout(() => {
-            overlay.classList.add('active');
-        }, 50);
-
-        // 4. Туман двигается
+        setTimeout(() => { overlay.classList.add('active'); }, 50);
         fogLayer.style.animation = 'fogPulse 3s infinite alternate';
 
-        // 5. Через 3 секунды убираем оверлей и показываем экран
         setTimeout(() => {
             overlay.classList.remove('active');
             setTimeout(() => overlay.remove(), 1000);
@@ -122,7 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
         nodes.forEach((node, index) => {
             setTimeout(() => {
                 node.classList.add('active');
-
                 if (nodes[index + 1] && window.effects) {
                     const rect1 = node.getBoundingClientRect();
                     const rect2 = nodes[index + 1].getBoundingClientRect();
@@ -148,7 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setTimeout(() => {
             loadInsight();
-            loadTrace();
             setTimeout(() => {
                 fogLayer.style.opacity = '';
                 fogLayer.style.background = '';
@@ -183,93 +183,124 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- ЗАГРУЗКА ИНСАЙТА ---
+    // --- ЗАГРУЗКА ИНСАЙТА (POST-ЗАПРОС) ---
     async function loadInsight() {
         try {
             const roleData = ROLE_MAPPING[currentRole];
-            const url = USE_REAL_API ? `${API_URL}?u_id=${roleData.uid}&role=${currentRole}` : roleData.file;
 
-            const response = await fetch(url);
-            if (!response.ok) throw new Error("Файл не найден");
-            const data = await response.json();
-
-            if (data.total === 0) {
-                insightContainer.style.display = 'none';
-                if (data.empty_reason && data.empty_reason.code === 'blocked_by_guard') {
-                    blockedContainer.style.display = 'block';
-                } else {
-                    emptyContainer.style.display = 'block';
-                }
-                return;
-            }
-
-            currentData = data.items[0];
-            const item = currentData;
-            const event = item.event;
-            const interp = item.interpretation;
-            const scorePercent = item.relevance ? (item.relevance.score * 100).toFixed(0) : '?';
-
+            // Показываем загрузку
+            insightContainer.innerHTML = '<div style="color: #fff; padding: 20px;">Загрузка данных...</div>';
             insightContainer.style.display = 'block';
             blockedContainer.style.display = 'none';
             emptyContainer.style.display = 'none';
 
-            insightContainer.innerHTML = `
-                <div class="insight-card">
-                    <div class="insight-header">
-                        <div class="header-tags">
-                            <span class="tag-alfa">Alfa Analytics</span>
-                            <span class="tag-score">Релевантность ${scorePercent}%</span>
-                        </div>
-                        <span class="date">${new Date(event.published_at).toLocaleDateString('ru-RU')}</span>
-                    </div>
-                    <h1 class="event-headline">${event.headline}</h1>
-                    
-                    <div class="why-matters-box">
-                        <h3>Скрытый сигнал</h3>
-                        <p>${interp.why_it_matters}</p>
-                    </div>
-                    
-                    <div class="consequences">
-                        ${interp.consequences.map(c => `
-                            <div class="consequence ${c.type}">
-                                <span class="badge badge-${c.type}">${c.type === 'risk' ? 'Угроза' : 'Возможность'}</span>
-                                <p>${c.text}</p>
-                            </div>
-                        `).join('')}
-                    </div>
-                    
-                    <div class="bank-view-box">
-                        <div class="bank-view-header">
-                            <h4>Мнение Альфа-Банка</h4>
-                            <span class="bank-date">${interp.bank_view.as_of_date || 'Архив'}</span>
-                        </div>
-                        <blockquote>"${interp.bank_view.quote}"</blockquote>
-                        <div class="source-links">
-                            ${item.evidence ? item.evidence.map(e => `
-                                <a href="javascript:void(0)" class="evidence-badge ${e.kind}" onclick="openSourceModal('${e.label}', '${e.ref}')">
-                                    ${e.kind === 'verified_fact' ? 'Факт' : e.kind === 'alfa_view' ? 'Аналитика' : 'AI'}
-                                </a>
-                            `).join('') : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    company_id: roleData.uid,
+                    role: currentRole,
+                    event: DEMO_EVENT
+                })
+            });
 
-            document.getElementById('actions-list').innerHTML = item.actions.map(a => `
-                <button class="action-btn" onclick="openActionModal('${a.text}', 'Переход в раздел: ${a.product_hint}')">
-                    ${a.text}
-                </button>
-            `).join('');
+            const result = await response.json();
+
+            // Обработка отказа (skipped)
+            if (result.status === 'skipped') {
+                insightContainer.style.display = 'none';
+                emptyContainer.style.display = 'block';
+                document.getElementById('empty-message-text').innerText = result.reason || 'Новость нерелевантна для этой компании.';
+                return;
+            }
+
+            if (result.status === 'error') {
+                throw new Error(result.message);
+            }
+
+            if (result.status === 'success') {
+                const item = result.insight;
+                currentData = item;
+
+                // Обработка guard'ов (refused)
+                if (item.data_quality && item.data_quality.refused && item.data_quality.refused.length > 0) {
+                    insightContainer.style.display = 'none';
+                    blockedContainer.style.display = 'block';
+                    document.getElementById('blocked-message-text').innerText = item.data_quality.refused[0].message;
+                    return;
+                }
+
+                const event = item.event;
+                const interp = item.interpretation;
+                const scorePercent = item.relevance ? (item.relevance.score * 100).toFixed(0) : '?';
+
+                insightContainer.style.display = 'block';
+                blockedContainer.style.display = 'none';
+                emptyContainer.style.display = 'none';
+
+                // Проверка на наличие цитаты (если нет - используем text)
+                const bankQuote = interp.bank_view.quote || interp.bank_view.text;
+
+                insightContainer.innerHTML = `
+                    <div class="insight-card">
+                        <div class="insight-header">
+                            <div class="header-tags">
+                                <span class="tag-alfa">Alfa Analytics</span>
+                                <span class="tag-score">Релевантность ${scorePercent}%</span>
+                            </div>
+                            <span class="date">${new Date(event.published_at).toLocaleDateString('ru-RU')}</span>
+                        </div>
+                        <h1 class="event-headline">${event.headline}</h1>
+                        
+                        <div class="why-matters-box">
+                            <h3>Скрытый сигнал</h3>
+                            <p>${interp.why_it_matters}</p>
+                        </div>
+                        
+                        <div class="consequences">
+                            ${interp.consequences.map(c => `
+                                <div class="consequence ${c.type}">
+                                    <span class="badge badge-${c.type}">${c.type === 'risk' ? 'Угроза' : 'Возможность'}</span>
+                                    <p>${c.text}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="bank-view-box">
+                            <div class="bank-view-header">
+                                <h4>Мнение Альфа-Банка</h4>
+                                <span class="bank-date">${interp.bank_view.as_of_date || 'Архив'}</span>
+                            </div>
+                            <blockquote>"${bankQuote}"</blockquote>
+                            <div class="source-links">
+                                ${item.evidence ? item.evidence.map(e => `
+                                    <a href="javascript:void(0)" class="evidence-badge ${e.kind}" onclick="openSourceModal('${e.label}', '${e.ref}')">
+                                        ${e.kind === 'verified_fact' ? 'Факт' : e.kind === 'alfa_view' ? 'Аналитика' : 'AI'}
+                                    </a>
+                                `).join('') : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('actions-list').innerHTML = item.actions.map(a => `
+                    <button class="action-btn" onclick="openActionModal('${a.text}', 'Переход в раздел: ${a.product_hint}')">
+                        ${a.text}
+                    </button>
+                `).join('');
+            }
 
         } catch (error) {
             console.error(error);
-            insightContainer.innerHTML = `<div style="color:var(--accent-danger);">Ошибка: ${error.message}</div>`;
+            insightContainer.style.display = 'block';
+            insightContainer.innerHTML = `<div style="color:#EF3124; padding: 20px;">Ошибка загрузки данных: ${error.message}</div>`;
         }
     }
 
-    // --- ЗАГРУЗКА ТРАССЫ ---
+    // --- ЗАГРУЗКА ТРАССЫ (МОК, ТАК КАК БЭК ПОКА НЕ ОТДАЕТ TRACE) ---
     async function loadTrace() {
         try {
+            // Для демо используем моковый файл трассы, который лежит у фронта
             const response = await fetch('trace_trc_4c90de.json');
             const data = await response.json();
             timeline.innerHTML = data.steps.map(step => {
@@ -282,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="step-icon">${icon}</div>
                         <div class="step-content">
                             <strong>Шаг ${step.step_no}: ${step.title}</strong>
-                            ${step.note ? `<br><small style="color:var(--accent-danger);">${step.note}</small>` : ''}
+                            ${step.note ? `<br><small style="color:#EF3124;">${step.note}</small>` : ''}
                         </div>
                     </div>
                 `;
@@ -302,7 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- ЧАТ ---
+    // --- ЧАТ (ОТВЕЧАЕТ НА ОСНОВЕ РЕАЛЬНЫХ ДАННЫХ) ---
     window.sendQuestion = function () {
         const input = document.getElementById('chat-input');
         const history = document.getElementById('chat-history');
@@ -322,9 +353,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (currentData) {
                 const q = userQuestion.toLowerCase();
                 if (q.includes('покупател') || q.includes('плательщик')) {
+                    // Ищем в why_it_matters упоминание контрагентов
                     answer = `На основе данных: ${currentData.interpretation.why_it_matters}`;
                 } else if (q.includes('риск')) {
-                    answer = `Угрозы: ${currentData.interpretation.consequences.filter(c => c.type === 'risk').map(c => c.text).join(' ')}`;
+                    const risks = currentData.interpretation.consequences.filter(c => c.type === 'risk').map(c => c.text).join(' ');
+                    answer = risks ? `Угрозы: ${risks}` : 'Явных угроз в инсайте не выделено.';
                 } else {
                     answer = `Главное: ${currentData.interpretation.why_it_matters.split('.')[0]}.`;
                 }
